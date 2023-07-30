@@ -1,5 +1,6 @@
 package main
 
+<<<<<<< HEAD
 import (
 	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
@@ -20,3 +21,6 @@ func main() {
 		panic(err)
 	}
 }
+=======
+func main() {}
+>>>>>>> 707e40f (Initial commit)

@@ -35,14 +35,14 @@ func (h *Handler) handleMethod(w http.ResponseWriter, r *http.Request) {
 
 	sliceURL := strings.Split(r.URL.Path, "/")
 
-	if len(sliceURL) != 6 || sliceURL[1] != "update" {
+	if len(sliceURL) != 5 || sliceURL[1] != "update" {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	metricsType := sliceURL[2]
 	metricsName := sliceURL[3]
-	metricsValue := sliceURL[5]
+	metricsValue := sliceURL[4]
 
 	if metricsType == "counter" {
 		if value, err := strconv.ParseInt(metricsValue, 10, 64); err == nil {

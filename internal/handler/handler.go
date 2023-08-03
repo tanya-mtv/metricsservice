@@ -42,8 +42,12 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		// update.POST("/:metricType/:metricName/:metricValue", h.PostMethodCounter)
 		// update.POST("/:metricType/:metricName/:metricValue", h.PostMethodGauge)
 
-		update.GET("/counter/:metricName", h.GetMethodCounter)
-		update.GET("/gauge/:metricName", h.GetMethodGauge)
+	}
+
+	value := router.Group("/value")
+	{
+		value.GET("/counter/:metricName", h.GetMethodCounter)
+		value.GET("/gauge/:metricName", h.GetMethodGauge)
 	}
 
 	return router

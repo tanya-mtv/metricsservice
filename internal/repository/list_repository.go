@@ -62,7 +62,6 @@ func (m *MemStorage) GetCounter(metricName string) (utils.Counter, bool) {
 }
 
 func (m *MemStorage) GetGauge(metricName string) (utils.Gauge, bool) {
-
 	res, found := m.gaugeData[metricName]
 	return res, found
 }

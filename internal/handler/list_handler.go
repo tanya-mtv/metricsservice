@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -8,14 +9,23 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
 
-func (h *Handler) GetMethodGauge(c *gin.Context) {
-	metricType := c.Param("metricType")
-	if metricType != "gauge" {
-		c.JSON(http.StatusBadRequest, 0)
-		return
-	}
+func (h *Handler) GetMethodCounter(c *gin.Context) {
+
 	metricName := c.Param("metricName")
 
+	cnt, found := h.service.GetCounter(metricName)
+
+	if !found {
+		newErrorResponse(c, http.StatusNotFound, "Metric not found")
+		return
+	}
+	c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	c.JSON(http.StatusOK, cnt)
+}
+
+func (h *Handler) GetMethodGauge(c *gin.Context) {
+	metricName := c.Param("metricName")
+	fmt.Println("1111111111111111", metricName)
 	gug, found := h.service.GetGauge(metricName)
 
 	if !found {
@@ -91,19 +101,6 @@ func (h *Handler) PostMethodGauge(c *gin.Context) {
 
 	c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	c.JSON(http.StatusOK, gug)
-}
-func (h *Handler) GetMethodCounter(c *gin.Context) {
-
-	metricName := c.Param("metricName")
-
-	cnt, found := h.service.GetCounter(metricName)
-
-	if !found {
-		newErrorResponse(c, http.StatusNotFound, "Metric not found")
-		return
-	}
-	c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	c.JSON(http.StatusOK, cnt)
 }
 
 // func (h *Handler) PostMethod(c *gin.Context) {

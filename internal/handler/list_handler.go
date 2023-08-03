@@ -8,21 +8,12 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
 
-func (h *Handler) PostMethodGauge(c *gin.Context) {
-	metricName := c.Param("metricName")
-	metricValue, err := strconv.ParseFloat(c.Param("metricValue"), 64)
-
-	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "invalid metricValue param")
+func (h *Handler) GetMethodGauge(c *gin.Context) {
+	metricType := c.Param("metricType")
+	if metricType != "gauge" {
+		c.JSON(http.StatusBadRequest, 0)
 		return
 	}
-	gug := h.service.UpdateGauge(metricName, metricValue)
-
-	c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	c.JSON(http.StatusOK, gug)
-}
-
-func (h *Handler) GetMethodGauge(c *gin.Context) {
 	metricName := c.Param("metricName")
 
 	gug, found := h.service.GetGauge(metricName)
@@ -35,8 +26,46 @@ func (h *Handler) GetMethodGauge(c *gin.Context) {
 	c.JSON(http.StatusOK, gug)
 }
 
-func (h *Handler) PostMethodCounter(c *gin.Context) {
+func (h *Handler) PostMethod(c *gin.Context) {
+	metricType := c.Param("metricType")
 	metricName := c.Param("metricName")
+	switch metricType {
+	case "counter":
+		metricValue, err := strconv.Atoi(c.Param("metricValue"))
+
+		if err != nil {
+			newErrorResponse(c, http.StatusBadRequest, "invalid metricValue param")
+			return
+		}
+
+		cnt := h.service.UpdateCounter(metricName, int64(metricValue))
+
+		c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		c.JSON(http.StatusOK, cnt)
+	case "gauge":
+		metricValue, err := strconv.ParseFloat(c.Param("metricValue"), 64)
+
+		if err != nil {
+			newErrorResponse(c, http.StatusBadRequest, "invalid metricValue param")
+			return
+		}
+		gug := h.service.UpdateGauge(metricName, metricValue)
+
+		c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		c.JSON(http.StatusOK, gug)
+	default:
+		c.JSON(http.StatusBadRequest, 0)
+	}
+}
+
+func (h *Handler) PostMethodCounter(c *gin.Context) {
+	metricType := c.Param("metricType")
+	if metricType != "counter" {
+		c.JSON(http.StatusBadRequest, 0)
+		return
+	}
+	metricName := c.Param("metricName")
+
 	metricValue, err := strconv.Atoi(c.Param("metricValue"))
 
 	if err != nil {
@@ -50,6 +79,19 @@ func (h *Handler) PostMethodCounter(c *gin.Context) {
 	c.JSON(http.StatusOK, cnt)
 }
 
+func (h *Handler) PostMethodGauge(c *gin.Context) {
+	metricName := c.Param("metricName")
+	metricValue, err := strconv.ParseFloat(c.Param("metricValue"), 64)
+
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid metricValue param")
+		return
+	}
+	gug := h.service.UpdateGauge(metricName, metricValue)
+
+	c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	c.JSON(http.StatusOK, gug)
+}
 func (h *Handler) GetMethodCounter(c *gin.Context) {
 
 	metricName := c.Param("metricName")

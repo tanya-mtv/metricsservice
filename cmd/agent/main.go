@@ -64,10 +64,6 @@ var metrics = map[string]bool{
 	"RandomValue":   true,
 }
 
-// const pollInterval = 2
-// const reportInterval = 10
-// const URL = "http://127.0.0.1:8080/update/"
-
 var valuesGauge = map[string]float64{}
 var pollCount uint64
 

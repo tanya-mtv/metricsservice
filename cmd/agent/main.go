@@ -76,7 +76,7 @@ func main() {
 	go NewMonitor(cfg.PollInterval)
 
 	time.Sleep(time.Duration(cfg.ReportInterval) * time.Second)
-	addr := cfg.Port + "/update/"
+	addr := "http://" + cfg.Port + "/update/"
 	for {
 		for name, value := range valuesGauge {
 			fmt.Println("k", name)

@@ -11,6 +11,7 @@ import (
 
 	"time"
 
+	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/utils"
 )
 
@@ -63,32 +64,37 @@ var metrics = map[string]bool{
 	"RandomValue":   true,
 }
 
-const pollInterval = 2
-const reportInterval = 10
-const URL = "http://127.0.0.1:8080/update/"
+// const pollInterval = 2
+// const reportInterval = 10
+// const URL = "http://127.0.0.1:8080/update/"
 
 var valuesGauge = map[string]float64{}
 var pollCount uint64
 
 func main() {
-	go NewMonitor(pollInterval)
+	cfg, err := config.InitConfigAgent()
+	if err != nil {
+		// sugarLogger.Error("error initialazing config", zap.String("initConfig", "fail"), err)
+		panic("error initialazing config")
+	}
+	go NewMonitor(cfg.PollInterval)
 
-	time.Sleep(reportInterval * time.Second)
-
+	time.Sleep(time.Duration(cfg.ReportInterval) * time.Second)
+	addr := "http://127.0.0.1:" + cfg.Port + "/update/"
 	for {
 		for name, value := range valuesGauge {
 			fmt.Println("k", name)
 			fmt.Println("v", value)
 			if name == "pollCount" {
-				post("counter", name, strconv.FormatUint(uint64(value), 10))
+				post("counter", name, strconv.FormatUint(uint64(value), 10), addr)
 			} else {
-				post("gauge", name, strconv.FormatFloat(value, 'f', -1, 64))
+				post("gauge", name, strconv.FormatFloat(value, 'f', -1, 64), addr)
 			}
 
 		}
 
 		pollCount = 0
-		time.Sleep(reportInterval * time.Second)
+		time.Sleep(time.Duration(cfg.ReportInterval) * time.Second)
 	}
 }
 
@@ -131,9 +137,10 @@ func NewMonitor(duration int) {
 	}
 }
 
-func post(metricsType string, metricName string, metricValue string) {
+func post(metricsType string, metricName string, metricValue string, url string) {
 	r := bytes.NewReader([]byte{})
-	resp, err := http.Post(URL+metricsType+"/"+metricName+"/"+metricValue, "text/plain", r)
+	fmt.Println("URL ", url+metricsType+"/"+metricName+"/"+metricValue)
+	resp, err := http.Post(url+metricsType+"/"+metricName+"/"+metricValue, "text/plain", r)
 	if err != nil {
 		panic(err)
 	}

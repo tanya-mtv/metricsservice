@@ -12,10 +12,10 @@ import (
 type Handler struct {
 	service *servise.Service
 	log     logger.Logger
-	cfg     *config.Config
+	cfg     *config.ConfigServer
 }
 
-func NewHandler(service *servise.Service, log logger.Logger, cfg *config.Config) *Handler {
+func NewHandler(service *servise.Service, log logger.Logger, cfg *config.ConfigServer) *Handler {
 	return &Handler{
 		service: service,
 		log:     log,

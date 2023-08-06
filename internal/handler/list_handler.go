@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -25,7 +24,7 @@ func (h *Handler) GetMethodCounter(c *gin.Context) {
 
 func (h *Handler) GetMethodGauge(c *gin.Context) {
 	metricName := c.Param("metricName")
-	fmt.Println("1111111111111111", metricName)
+
 	gug, found := h.service.GetGauge(metricName)
 
 	if !found {
@@ -68,40 +67,40 @@ func (h *Handler) PostMethod(c *gin.Context) {
 	}
 }
 
-func (h *Handler) PostMethodCounter(c *gin.Context) {
-	metricType := c.Param("metricType")
-	if metricType != "counter" {
-		c.JSON(http.StatusBadRequest, 0)
-		return
-	}
-	metricName := c.Param("metricName")
+// func (h *Handler) PostMethodCounter(c *gin.Context) {
+// 	metricType := c.Param("metricType")
+// 	if metricType != "counter" {
+// 		c.JSON(http.StatusBadRequest, 0)
+// 		return
+// 	}
+// 	metricName := c.Param("metricName")
 
-	metricValue, err := strconv.Atoi(c.Param("metricValue"))
+// 	metricValue, err := strconv.Atoi(c.Param("metricValue"))
 
-	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "invalid metricValue param")
-		return
-	}
+// 	if err != nil {
+// 		newErrorResponse(c, http.StatusBadRequest, "invalid metricValue param")
+// 		return
+// 	}
 
-	cnt := h.service.UpdateCounter(metricName, int64(metricValue))
+// 	cnt := h.service.UpdateCounter(metricName, int64(metricValue))
 
-	c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	c.JSON(http.StatusOK, cnt)
-}
+// 	c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+// 	c.JSON(http.StatusOK, cnt)
+// }
 
-func (h *Handler) PostMethodGauge(c *gin.Context) {
-	metricName := c.Param("metricName")
-	metricValue, err := strconv.ParseFloat(c.Param("metricValue"), 64)
+// func (h *Handler) PostMethodGauge(c *gin.Context) {
+// 	metricName := c.Param("metricName")
+// 	metricValue, err := strconv.ParseFloat(c.Param("metricValue"), 64)
 
-	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "invalid metricValue param")
-		return
-	}
-	gug := h.service.UpdateGauge(metricName, metricValue)
+// 	if err != nil {
+// 		newErrorResponse(c, http.StatusBadRequest, "invalid metricValue param")
+// 		return
+// 	}
+// 	gug := h.service.UpdateGauge(metricName, metricValue)
 
-	c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	c.JSON(http.StatusOK, gug)
-}
+// 	c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+// 	c.JSON(http.StatusOK, gug)
+// }
 
 // func (h *Handler) PostMethod(c *gin.Context) {
 

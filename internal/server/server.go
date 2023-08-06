@@ -17,16 +17,13 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 )
 
-type gauge float64
-type counter int64
-
 type server struct {
 	logger     logger.Logger
 	httpServer *http.Server
-	cfg        *config.Config
+	cfg        *config.ConfigServer
 }
 
-func NewServer(log logger.Logger, cfg *config.Config) *server {
+func NewServer(log logger.Logger, cfg *config.ConfigServer) *server {
 	return &server{
 		logger: log,
 		cfg:    cfg,

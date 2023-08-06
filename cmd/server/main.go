@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// srv := server.NewServer(appLogger, cfg)
-	cfg, err := config.InitConfig()
+	cfg, err := config.InitConfigServer()
 	if err != nil {
 		// sugarLogger.Error("error initialazing config", zap.String("initConfig", "fail"), err)
 		panic("error initialazing config")

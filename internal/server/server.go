@@ -61,7 +61,7 @@ func (s *server) Run() error {
 
 	// amen := amenitie.NewAmenitie(s.ps, s.logger, s.cfg)
 	httpServer := &http.Server{
-		Addr:           ":" + s.cfg.Port,
+		Addr:           s.cfg.Port,
 		Handler:        handl.InitRoutes(),
 		MaxHeaderBytes: 1 << 20,
 		ReadTimeout:    10 * time.Second,

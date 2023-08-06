@@ -25,7 +25,7 @@ func InitConfigServer() (*ConfigServer, error) {
 	// }
 	var flagRunAddr string
 
-	flag.StringVar(&flagRunAddr, "a", "8080", "address and port to run server")
+	flag.StringVar(&flagRunAddr, "a", "localhost:8080", "address and port to run server")
 
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
@@ -44,7 +44,7 @@ func InitConfigAgent() (*ConfigAgent, error) {
 	var pollInterval int
 	var reportInterval int
 
-	flag.StringVar(&flagRunAddr, "a", "8080", "address and port to run server")
+	flag.StringVar(&flagRunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.IntVar(&reportInterval, "r", 10, "report interval in seconds")
 	flag.IntVar(&pollInterval, "p", 2, "poll interval in seconds")
 	flag.Parse()

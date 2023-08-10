@@ -69,7 +69,7 @@ func (sm *ServiceMetrics) NewMonitor() {
 	for {
 		<-time.After(interval)
 		pollCount += 1
-		// Read full mem stats
+
 		runtime.ReadMemStats(&rtm)
 
 		v := reflect.ValueOf(rtm)
@@ -83,26 +83,20 @@ func (sm *ServiceMetrics) NewMonitor() {
 				switch fmt.Sprintf("%T", v.Field(i).Interface()) {
 				case "uint64":
 					sm.metrics.SetGauge(metricsName, utils.Gauge(float64(v.Field(i).Interface().(uint64))))
-					// sm.metrics.SetGauge(metricsName, v.Field(i).Interface().(utils.Gauge))
-					// valuesGauge[metricsName] = float64(v.Field(i).Interface().(uint64))
+
 				case "uint32":
 					sm.metrics.SetGauge(metricsName, utils.Gauge(float64(v.Field(i).Interface().(uint32))))
-					// valuesGauge[metricsName] = float64(v.Field(i).Interface().(uint32))
+
 				case "float64":
 					sm.metrics.SetGauge(metricsName, utils.Gauge(v.Field(i).Interface().(float64)))
-					// valuesGauge[metricsName] = v.Field(i).Interface().(float64)
 
 				}
-				// fmt.Println("metricsName ", metricsName)
-				// fmt.Println("metricsName ", sm.metrics.[metricsName])
+
 			}
 
 		}
 		sm.metrics.SetGauge("pollCount", utils.Gauge(float64(pollCount)))
 		sm.metrics.SetGauge("RandomValue", utils.Gauge(float64(rand.Float64())))
-
-		fmt.Println("all counter", sm.metrics.GetCounter)
-		fmt.Println("all Gauge", sm.metrics.GetGauge)
 
 	}
 }

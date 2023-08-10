@@ -34,32 +34,11 @@ func (s *server) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	// db, err := repository.NewPostgresDB(*s.cfg.Postgresql)
-
-	// if err != nil {
-	// 	s.logger.Error("Failed to initialaze db:", zap.String("string connection", "postgres"), err)
-	// } else {
-	// 	s.logger.Info("successful connection to database", zap.String("Connection", "Ok"))
-	// }
-
-	// redis_db, err := repository.NewRedisDB(s.cfg.Redis, ctx)
-
-	// if err != nil {
-	// 	s.logger.Error("Failed to initialaze redis db:", zap.String("string connection", "redis"), err)
-	// } else {
-	// 	s.logger.Info("successful connection to Redis", zap.String("Connection", "Ok"))
-	// }
-
-	// repos := repository.NewRepository(db, redis_db, s.logger)
-	// serv := servise.NewServise(repos)
-
-	// s.ps = serv
 	repos := repository.NewRepository(s.logger)
 	serv := servise.NewServise(repos)
 
 	handl := handler.NewHandler(serv, s.logger, s.cfg)
 
-	// amen := amenitie.NewAmenitie(s.ps, s.logger, s.cfg)
 	httpServer := &http.Server{
 		Addr:           s.cfg.Port,
 		Handler:        handl.InitRoutes(),
@@ -70,12 +49,10 @@ func (s *server) Run() error {
 
 	s.httpServer = httpServer
 
-	// s.logger.Info("Starting Reader Kafka consumers")
-
 	go func() {
-		// s.logger.Info("Writer microservice connectlistening on port: %s", s.httpServer.Addr)
+
 		if err := s.httpServer.ListenAndServe(); err != nil {
-			// s.logger.WarnMsg("ListenAndServe", err)
+
 			fmt.Println("ListenAndServe")
 		}
 	}()

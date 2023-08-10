@@ -42,22 +42,6 @@ func (a *agent) Run() error {
 	go a.metrics.NewMonitor()
 
 	go a.metrics.PostMessage()
-	// addr := "http://" + a.cfg.Port + "/update/"
-	// for {
-	// 	for name, value := range a.service.valuesGauge {
-	// 		fmt.Println("k", name)
-	// 		fmt.Println("v", value)
-	// 		if name == "pollCount" {
-	// 			a.metrics.Post("counter", name, strconv.FormatUint(uint64(value), 10), addr)
-	// 		} else {
-	// 			a.metrics.Post("gauge", name, strconv.FormatFloat(value, 'f', -1, 64), addr)
-	// 		}
-
-	// 	}
-
-	// 	pollCount = 0
-	// 	time.Sleep(time.Duration(a.cfg.ReportInterval) * time.Second)
-	// }
 
 	<-ctx.Done()
 	return nil

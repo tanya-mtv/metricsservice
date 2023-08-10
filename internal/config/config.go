@@ -8,29 +8,21 @@ import (
 )
 
 type ConfigServer struct {
-	// Postgresql *repository.Config      `mapstructure:"postgres"`
 	Port string
 }
 
 type ConfigAgent struct {
-	// Postgresql *repository.Config      `mapstructure:"postgres"`
 	Port           string
 	ReportInterval int
 	PollInterval   int
 }
 
 func InitConfigServer() (*ConfigServer, error) {
-	// viper.AddConfigPath("configs")
-	// viper.SetConfigName("config")
 
-	// if err := viper.ReadInConfig(); err != nil {
-	// 	return &Config{}, err
-	// }
 	var flagRunAddr string
 
 	flag.StringVar(&flagRunAddr, "a", "localhost:8080", "address and port to run server")
 
-	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
 
 	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
@@ -38,8 +30,7 @@ func InitConfigServer() (*ConfigServer, error) {
 	}
 
 	cfg := &ConfigServer{
-		// Postgresql: &repositoryConfig,
-		// Port: viper.GetString("port"),
+
 		Port: flagRunAddr,
 	}
 
@@ -81,14 +72,12 @@ func InitConfigAgent() (*ConfigAgent, error) {
 	}
 
 	cfg := &ConfigAgent{
-		// Postgresql: &repositoryConfig,
-		// Port: viper.GetString("port"),
+
 		Port:           flagRunAddr,
 		ReportInterval: reportInterval,
 		PollInterval:   pollInterval,
 	}
 
-	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
 	return cfg, nil
 }

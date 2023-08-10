@@ -15,7 +15,7 @@ import (
 
 func testRequest(t *testing.T, ts *httptest.Server, method,
 	path string) (*http.Response, string) {
-	// path string) *http.Response {
+
 	req, err := http.NewRequest(method, ts.URL+path, nil)
 	require.NoError(t, err)
 
@@ -41,7 +41,6 @@ func TestRouter(t *testing.T) {
 	ts := httptest.NewServer(handl.InitRoutes())
 	defer ts.Close()
 
-	// Check statuses
 	var testTableStatus = []struct {
 		url    string
 		want   string
@@ -60,14 +59,11 @@ func TestRouter(t *testing.T) {
 		assert.Equal(t, v.want, get)
 	}
 
-	//Check metod POST
 	var testTablePost = []struct {
 		url    string
 		want   string
 		status int
 	}{
-
-		// проверим на ошибочный запрос
 
 		{"/update/counter/testSetGet40/1", "1", http.StatusOK},
 		{"/update/counter/testSetGet40/1", "2", http.StatusOK},
@@ -84,7 +80,6 @@ func TestRouter(t *testing.T) {
 		assert.Equal(t, v.want, get)
 	}
 
-	//Check metod GET
 	var testTableGET = []struct {
 		url    string
 		want   string

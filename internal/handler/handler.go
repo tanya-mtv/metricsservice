@@ -24,8 +24,7 @@ func NewHandler(service *servise.Service, log logger.Logger, cfg *config.ConfigS
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
-	// router := http.NewServeMux()
-	// router.HandleFunc("/", h.handleMethod)
+
 	router := gin.New()
 
 	router.GET("", h.getAllMetrics)
@@ -39,8 +38,6 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		})
 
 		update.POST("/:metricType/:metricName/:metricValue", h.PostMethod)
-		// update.POST("/:metricType/:metricName/:metricValue", h.PostMethodCounter)
-		// update.POST("/:metricType/:metricName/:metricValue", h.PostMethodGauge)
 
 	}
 

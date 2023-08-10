@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
@@ -36,8 +35,6 @@ func (a *agent) Run() error {
 
 	a.service = servise.NewServise(repos)
 	a.metrics = metrics.NewServiceMetrics(a.cfg, a.service)
-
-	time.Sleep(time.Duration(a.cfg.ReportInterval) * time.Second)
 
 	go a.metrics.NewMonitor()
 

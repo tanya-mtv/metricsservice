@@ -20,10 +20,8 @@ func NewMetricStorage() *MemStorage {
 }
 
 func (m *MemStorage) UpdateCounter(n string, v int64) utils.Counter {
-
 	m.counterData[n] += utils.Counter(v)
 	return m.counterData[n]
-
 }
 
 func (m *MemStorage) UpdateGauge(n string, v float64) utils.Gauge {

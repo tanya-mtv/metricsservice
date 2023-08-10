@@ -9,11 +9,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tanya-mtv/metricsservice/internal/repository"
+	"github.com/tanya-mtv/metricsservice/internal/servise"
 )
 
 func testRequest(t *testing.T, ts *httptest.Server, method,
-	// path string) (*http.Response, string) {
-	path string) *http.Response {
+	path string) (*http.Response, string) {
+	// path string) *http.Response {
 	req, err := http.NewRequest(method, ts.URL+path, nil)
 	require.NoError(t, err)
 
@@ -24,50 +26,78 @@ func testRequest(t *testing.T, ts *httptest.Server, method,
 	respBody, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
 	fmt.Println("respBody", string(respBody))
-	return resp
-	//, string(respBody)
+	return resp, string(respBody)
 }
 
 func TestRouter(t *testing.T) {
-	handl := &Handler{}
+	repos := &repository.Repository{
+		MetricStorage: repository.NewMetricStorage(),
+	}
+	serv := servise.NewServise(repos)
+
+	handl := &Handler{
+		service: serv,
+	}
 	ts := httptest.NewServer(handl.InitRoutes())
 	defer ts.Close()
 
-	var testTable = []struct {
+	// Check statuses
+	var testTableStatus = []struct {
+		url    string
+		want   string
+		status int
+	}{
+		{"/value/counter1/testSetGet40", "404 page not found", http.StatusNotFound},
+		{"/value/gauge1/testSetGet40", "404 page not found", http.StatusNotFound},
+		{"/update/counter1/testSetGet40/1", "404 page not found", http.StatusNotFound},
+		{"/update/gauge1/testSetGet40/235", "404 page not found", http.StatusNotFound},
+	}
+	for _, v := range testTableStatus {
+		resp, get := testRequest(t, ts, "GET", v.url)
+		defer resp.Body.Close()
+
+		assert.Equal(t, v.status, resp.StatusCode)
+		assert.Equal(t, v.want, get)
+	}
+
+	//Check metod POST
+	var testTablePost = []struct {
 		url    string
 		want   string
 		status int
 	}{
 
 		// проверим на ошибочный запрос
-		{"/value/counter1/testSetGet40", "Metric not found", http.StatusNotFound},
-		{"/value/gauge1/testSetGet40", "Metric not found", http.StatusNotFound},
+
+		{"/update/counter/testSetGet40/1", "1", http.StatusOK},
+		{"/update/counter/testSetGet40/1", "2", http.StatusOK},
+		{"/update/counter/testSetGet40/1.36", "{\"message\":\"invalid metricValue param\"}", http.StatusBadRequest},
+
+		{"/update/gauge/testSetGet40/236.66", "236.66", http.StatusOK},
+		{"/update/gauge/testSetGet40/105.66", "105.66", http.StatusOK},
 	}
-	for _, v := range testTable {
-		// resp, get := testRequest(t, ts, "GET", v.url)
-		resp := testRequest(t, ts, "GET", v.url)
+	for _, v := range testTablePost {
+		resp, get := testRequest(t, ts, "POST", v.url)
 		defer resp.Body.Close()
+
 		assert.Equal(t, v.status, resp.StatusCode)
-		// assert.Equal(t, v.want, get)
+		assert.Equal(t, v.want, get)
 	}
 
-	var testTable1 = []struct {
+	//Check metod GET
+	var testTableGET = []struct {
 		url    string
 		want   string
 		status int
 	}{
-
-		// проверим на ошибочный запрос
-		{"/update/counter1/testSetGet40/1", "", http.StatusBadRequest},
-		// {"/update/counter/testSetGet40/1.36", "Metric not found", http.StatusBadRequest},
-		// {"/update/gauge1/testSetGet40/235", "Metric not found", http.StatusBadRequest},
+		{"/value/counter/testSetGet40", "2", http.StatusOK},
+		{"/value/gauge/testSetGet40", "105.66", http.StatusOK},
 	}
-	for _, v := range testTable1 {
-		// resp, get := testRequest(t, ts, "GET", v.url)
-		resp := testRequest(t, ts, "POST", v.url)
+	for _, v := range testTableGET {
+		resp, get := testRequest(t, ts, "GET", v.url)
 		defer resp.Body.Close()
-		fmt.Println("resp.StatusCode ", resp.StatusCode)
+
 		assert.Equal(t, v.status, resp.StatusCode)
-		// assert.Equal(t, v.want, get)
+		assert.Equal(t, v.want, get)
 	}
 }

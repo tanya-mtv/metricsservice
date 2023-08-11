@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
@@ -37,6 +38,7 @@ func TestRouter(t *testing.T) {
 
 	handl := &Handler{
 		service: serv,
+		router:  gin.New(),
 	}
 	ts := httptest.NewServer(handl.InitRoutes())
 	defer ts.Close()

@@ -30,7 +30,7 @@ func (m *MemStorage) UpdateGauge(n string, v float64) utils.Gauge {
 }
 
 func (m *MemStorage) GetAll() ([]models.Metrics, error) {
-	var metricsSlice []models.Metrics
+	metricsSlice := make([]models.Metrics, 0)
 
 	for name, value := range m.counterData {
 

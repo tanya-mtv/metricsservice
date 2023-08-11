@@ -18,7 +18,7 @@ import (
 // var valuesGauge = map[string]float64{}
 var pollCount uint64
 
-var metrics = map[string]bool{
+var reqmetrics = map[string]bool{
 	"Alloc":         true,
 	"BuckHashSys":   true,
 	"Frees":         true,
@@ -51,14 +51,47 @@ var metrics = map[string]bool{
 }
 
 type ServiceMetrics struct {
-	cfg     *config.ConfigAgent
-	metrics *servise.Service
+	cfg        *config.ConfigAgent
+	metrics    *servise.Service
+	reqmetrics map[string]bool
 }
 
 func NewServiceMetrics(cfg *config.ConfigAgent, metrics *servise.Service) *ServiceMetrics {
+	reqmetrics := make(map[string]bool, 29)
+	reqmetrics["Alloc"] = true
+	reqmetrics["BuckHashSys"] = true
+	reqmetrics["Frees"] = true
+	reqmetrics["GCCPUFraction"] = true
+	reqmetrics["GCSys"] = true
+	reqmetrics["HeapAlloc"] = true
+	reqmetrics["HeapIdle"] = true
+	reqmetrics["HeapInuse"] = true
+	reqmetrics["HeapObjects"] = true
+	reqmetrics["HeapReleased"] = true
+	reqmetrics["HeapSys"] = true
+	reqmetrics["LastGC"] = true
+	reqmetrics["Lookups"] = true
+	reqmetrics["MCacheInuse"] = true
+	reqmetrics["MCacheSys"] = true
+	reqmetrics["MSpanInuse"] = true
+	reqmetrics["MSpanSys"] = true
+	reqmetrics["Mallocs"] = true
+	reqmetrics["NextGC"] = true
+	reqmetrics["NumForcedGC"] = true
+	reqmetrics["NumGC"] = true
+	reqmetrics["OtherSys"] = true
+	reqmetrics["PauseTotalNs"] = true
+	reqmetrics["StackInuse"] = true
+	reqmetrics["StackSys"] = true
+	reqmetrics["Sys"] = true
+	reqmetrics["TotalAlloc"] = true
+	reqmetrics["PollCount"] = true
+	reqmetrics["RandomValue"] = true
+
 	return &ServiceMetrics{
-		cfg:     cfg,
-		metrics: metrics,
+		cfg:        cfg,
+		metrics:    metrics,
+		reqmetrics: reqmetrics,
 	}
 }
 
@@ -78,7 +111,7 @@ func (sm *ServiceMetrics) NewMonitor() {
 		for i := 0; i < v.NumField(); i++ {
 			metricsName := typeOfS.Field(i).Name
 
-			if _, ok := metrics[metricsName]; ok {
+			if _, ok := reqmetrics[metricsName]; ok {
 
 				switch fmt.Sprintf("%T", v.Field(i).Interface()) {
 				case "uint64":

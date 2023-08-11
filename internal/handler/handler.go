@@ -13,23 +13,23 @@ type Handler struct {
 	service *servise.Service
 	log     logger.Logger
 	cfg     *config.ConfigServer
+	router  *gin.Engine
 }
 
-func NewHandler(service *servise.Service, log logger.Logger, cfg *config.ConfigServer) *Handler {
+func NewHandler(service *servise.Service, log logger.Logger, cfg *config.ConfigServer, router *gin.Engine) *Handler {
 	return &Handler{
 		service: service,
 		log:     log,
 		cfg:     cfg,
+		router:  router,
 	}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
 
-	router := gin.New()
+	h.router.GET("", h.getAllMetrics)
 
-	router.GET("", h.getAllMetrics)
-
-	update := router.Group("/update")
+	update := h.router.Group("/update")
 	{
 		update.POST("/", func(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -41,11 +41,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	}
 
-	value := router.Group("/value")
+	value := h.router.Group("/value")
 	{
 		value.GET("/counter/:metricName", h.GetMethodCounter)
 		value.GET("/gauge/:metricName", h.GetMethodGauge)
 	}
 
-	return router
+	return h.router
 }

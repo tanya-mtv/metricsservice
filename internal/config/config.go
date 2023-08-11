@@ -25,12 +25,11 @@ func InitConfigServer() (*ConfigServer, error) {
 
 	flag.Parse()
 
-	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
+	if envRunAddr, ok := os.LookupEnv("ADDRESS"); ok {
 		flagRunAddr = envRunAddr
 	}
 
 	cfg := &ConfigServer{
-
 		Port: flagRunAddr,
 	}
 
@@ -47,11 +46,12 @@ func InitConfigAgent() (*ConfigAgent, error) {
 	flag.IntVar(&pollInterval, "p", 2, "poll interval in seconds")
 	flag.Parse()
 
-	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
+	if envRunAddr, ok := os.LookupEnv("ADDRESS"); ok {
 		flagRunAddr = envRunAddr
 	}
 
-	if envreportInterval := os.Getenv("REPORT_INTERVAL"); envreportInterval != "" {
+	if envreportInterval, ok := os.LookupEnv("REPORT_INTERVAL"); ok {
+		// if envreportInterval := os.Getenv("REPORT_INTERVAL"); envreportInterval != "" {
 		envreportIntervalInt, err := strconv.Atoi(envreportInterval)
 
 		if err != nil {
@@ -61,7 +61,8 @@ func InitConfigAgent() (*ConfigAgent, error) {
 		reportInterval = envreportIntervalInt
 	}
 
-	if envpollInterval := os.Getenv("POLL_INTERVAL"); envpollInterval != "" {
+	if envpollInterval, ok := os.LookupEnv("POLL_INTERVAL"); ok {
+		// if envpollInterval := os.Getenv("POLL_INTERVAL"); envpollInterval != "" {
 		envpollIntervalInt, err := strconv.Atoi(envpollInterval)
 		if err != nil {
 			fmt.Println("Can't parse value pollInterval to Int")
@@ -78,6 +79,5 @@ func InitConfigAgent() (*ConfigAgent, error) {
 		PollInterval:   pollInterval,
 	}
 
-	flag.Parse()
 	return cfg, nil
 }

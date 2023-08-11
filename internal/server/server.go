@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
 	"github.com/tanya-mtv/metricsservice/internal/servise"
 
@@ -21,6 +22,7 @@ type server struct {
 	logger     logger.Logger
 	httpServer *http.Server
 	cfg        *config.ConfigServer
+	router     *gin.Engine
 }
 
 func NewServer(log logger.Logger, cfg *config.ConfigServer) *server {
@@ -36,8 +38,9 @@ func (s *server) Run() error {
 
 	repos := repository.NewRepository(s.logger)
 	serv := servise.NewServise(repos)
+	s.router = gin.New()
 
-	handl := handler.NewHandler(serv, s.logger, s.cfg)
+	handl := handler.NewHandler(serv, s.logger, s.cfg, s.router)
 
 	httpServer := &http.Server{
 		Addr:           s.cfg.Port,
@@ -46,7 +49,6 @@ func (s *server) Run() error {
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 	}
-
 	s.httpServer = httpServer
 
 	go func() {

@@ -29,6 +29,7 @@ func InitConfigServer() (*ConfigServer, error) {
 		flagRunAddr = envRunAddr
 	}
 
+	fmt.Println("flagRunAddr", flagRunAddr)
 	cfg := &ConfigServer{
 		Port: flagRunAddr,
 	}

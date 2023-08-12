@@ -3,7 +3,7 @@ package metrics
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"reflect"
@@ -144,7 +144,7 @@ func (sm *ServiceMetrics) Post(metricsType string, metricName string, metricValu
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	return string(body), err
 }
 

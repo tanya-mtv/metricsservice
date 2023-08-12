@@ -3,6 +3,7 @@ package metrics
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"reflect"
@@ -134,7 +135,7 @@ func (sm *ServiceMetrics) NewMonitor() {
 	}
 }
 
-func (sm *ServiceMetrics) Post(metricsType string, metricName string, metricValue string, url string) {
+func (sm *ServiceMetrics) Post(metricsType string, metricName string, metricValue string, url string) (string, error) {
 	r := bytes.NewReader([]byte{})
 	fmt.Println("URL ", url+metricsType+"/"+metricName+"/"+metricValue)
 	resp, err := http.Post(url+metricsType+"/"+metricName+"/"+metricValue, "text/plain", r)
@@ -142,6 +143,9 @@ func (sm *ServiceMetrics) Post(metricsType string, metricName string, metricValu
 		panic(err)
 	}
 	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	return string(body), err
 }
 
 func (sm *ServiceMetrics) PostMessage() {
@@ -149,12 +153,24 @@ func (sm *ServiceMetrics) PostMessage() {
 	for {
 		for name, value := range sm.metrics.MetricStorageAgent.GetAllGauge() {
 			fmt.Println("v", value)
-			sm.Post("gauge", name, strconv.FormatFloat(float64(value), 'f', -1, 64), addr)
+			body, err := sm.Post("gauge", name, strconv.FormatFloat(float64(value), 'f', -1, 64), addr)
+
+			if err != nil {
+				panic("error reading body")
+			}
+
+			fmt.Println("data was sent successfuly", body)
 		}
 
 		for name, value := range sm.metrics.MetricStorageAgent.GetAllCounter() {
 			fmt.Println("v", value)
-			sm.Post("counter", name, strconv.FormatUint(uint64(value), 10), addr)
+			body, err := sm.Post("counter", name, strconv.FormatUint(uint64(value), 10), addr)
+
+			if err != nil {
+				panic("error reading body")
+			}
+
+			fmt.Println("data was sent successfuly", body)
 		}
 
 		pollCount = 0

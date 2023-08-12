@@ -1,38 +1,48 @@
 package metrics
 
-// import (
-// 	"net/http"
-// 	"testing"
+import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 
-// 	"github.com/tanya-mtv/metricsservice/internal/config"
-// 	"github.com/tanya-mtv/metricsservice/internal/repository"
-// 	"github.com/tanya-mtv/metricsservice/internal/servise"
-// )
+	"github.com/stretchr/testify/assert"
+	"github.com/tanya-mtv/metricsservice/internal/config"
+	"github.com/tanya-mtv/metricsservice/internal/repository"
+	"github.com/tanya-mtv/metricsservice/internal/servise"
+)
 
-// func TestServiceMetrics_Post(t *testing.T) {
-// 	repos := &repository.Repository{
-// 		MetricStorageAgent: repository.NewMetricStorageAgent(),
-// 	}
-// 	serv := servise.NewServise(repos)
-// 	sm := NewServiceMetrics(&config.ConfigAgent{}, serv)
+func TestServiceMetrics_Post(t *testing.T) {
+	repos := &repository.Repository{
+		MetricStorageAgent: repository.NewMetricStorageAgent(),
+	}
+	serv := servise.NewServise(repos)
+	sm := NewServiceMetrics(&config.ConfigAgent{}, serv)
 
-// 	// }
-// 	addr := "http://localhost:8080/update"
-// 	var tests = []struct {
-// 		nameTest    string
-// 		metricType  string
-// 		metricName  string
-// 		metricValue string
-// 		// want        string
-// 		status int
-// 	}{
-// 		{"Post method gauge", "gauge", "Mallocs", "1277", http.StatusOK},
-// 		{"Post method counter", "counter", "PollCount", "15", http.StatusOK},
-// 	}
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+	}))
+	addr := server.URL + "/update/"
+	fmt.Println("addr ", addr)
+	var tests = []struct {
+		nameTest     string
+		metricType   string
+		metricName   string
+		metricValue  string
+		expectedBody string
+	}{
+		{"Post method gauge", "gauge", "Mallocs", "1277", "1277"},
+		{"Post method counter", "counter", "PollCount", "15", "15"},
+	}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.nameTest, func(t *testing.T) {
-// 			sm.Post(tt.metricType, tt.metricName, tt.metricValue, addr)
-// 		})
-// 	}
-// }
+	for _, tt := range tests {
+		t.Run(tt.nameTest, func(t *testing.T) {
+			_, err := sm.Post(tt.metricType, tt.metricName, tt.metricValue, addr)
+
+			assert.NoError(t, err, "error making HTTP request")
+
+			if tt.expectedBody != "" {
+				assert.NoError(t, err, "error making HTTP request")
+			}
+		})
+	}
+}

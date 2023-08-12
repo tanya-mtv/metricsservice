@@ -14,21 +14,22 @@ type MetricStorage interface {
 	GetGauge(metricName string) (utils.Gauge, bool)
 }
 
-type MetricStorageAgent interface {
-	SetGauge(metricName string, value utils.Gauge)
+type MetricRepositoryAgent interface {
+	SetValueGauge(metricName string, value utils.Gauge)
+	SetValueCounter(metricName string, value utils.Counter)
 	GetAllCounter() map[string]utils.Counter
 	GetAllGauge() map[string]utils.Gauge
 }
 
 type Repository struct {
 	MetricStorage
-	MetricStorageAgent
+	MetricRepositoryAgent
 }
 
 // func NewRepository(db *sql.DB, log logger.Logger) *Repository {
 func NewRepository(log logger.Logger) *Repository {
 	return &Repository{
-		MetricStorage:      NewMetricStorage(),
-		MetricStorageAgent: NewMetricStorageAgent(),
+		MetricStorage:         NewMetricRepository(),
+		MetricRepositoryAgent: NewMetricRepositoryAgent(),
 	}
 }

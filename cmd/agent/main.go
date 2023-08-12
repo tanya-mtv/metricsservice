@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	cfg, err := config.InitConfigAgent()
+	cfg, err := config.InitAgent()
 	if err != nil {
 
 		panic("error initialazing config")

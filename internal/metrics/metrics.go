@@ -12,12 +12,12 @@ import (
 	"time"
 
 	"github.com/tanya-mtv/metricsservice/internal/config"
-	"github.com/tanya-mtv/metricsservice/internal/servise"
+	"github.com/tanya-mtv/metricsservice/internal/repository"
+
 	"github.com/tanya-mtv/metricsservice/internal/utils"
 )
 
-// var valuesGauge = map[string]float64{}
-var pollCount uint64
+var pollCount int64
 
 var reqmetrics = map[string]bool{
 	"Alloc":         true,
@@ -52,12 +52,12 @@ var reqmetrics = map[string]bool{
 }
 
 type ServiceMetrics struct {
-	cfg        *config.ConfigAgent
-	metrics    *servise.Service
-	reqmetrics map[string]bool
+	cfg               *config.ConfigAgent
+	metricsRepository *repository.Repository
+	reqmetrics        map[string]bool
 }
 
-func NewServiceMetrics(cfg *config.ConfigAgent, metrics *servise.Service) *ServiceMetrics {
+func NewServiceMetrics(cfg *config.ConfigAgent, metricsRepository *repository.Repository) *ServiceMetrics {
 	reqmetrics := make(map[string]bool, 29)
 	reqmetrics["Alloc"] = true
 	reqmetrics["BuckHashSys"] = true
@@ -90,18 +90,19 @@ func NewServiceMetrics(cfg *config.ConfigAgent, metrics *servise.Service) *Servi
 	reqmetrics["RandomValue"] = true
 
 	return &ServiceMetrics{
-		cfg:        cfg,
-		metrics:    metrics,
-		reqmetrics: reqmetrics,
+		cfg:               cfg,
+		metricsRepository: metricsRepository,
+		reqmetrics:        reqmetrics,
 	}
 }
 
 func (sm *ServiceMetrics) NewMonitor() {
 
 	var rtm runtime.MemStats
-	var interval = time.Duration(sm.cfg.PollInterval) * time.Second
+	interval := time.Duration(sm.cfg.PollInterval) * time.Second
 	for {
-		<-time.After(interval)
+		// <-time.After(interval)
+		time.Sleep(interval)
 		pollCount += 1
 
 		runtime.ReadMemStats(&rtm)
@@ -116,31 +117,31 @@ func (sm *ServiceMetrics) NewMonitor() {
 
 				switch fmt.Sprintf("%T", v.Field(i).Interface()) {
 				case "uint64":
-					sm.metrics.SetGauge(metricsName, utils.Gauge(float64(v.Field(i).Interface().(uint64))))
+					sm.metricsRepository.SetValueGauge(metricsName, utils.Gauge(float64(v.Field(i).Interface().(uint64))))
 
 				case "uint32":
-					sm.metrics.SetGauge(metricsName, utils.Gauge(float64(v.Field(i).Interface().(uint32))))
+					sm.metricsRepository.SetValueGauge(metricsName, utils.Gauge(float64(v.Field(i).Interface().(uint32))))
 
 				case "float64":
-					sm.metrics.SetGauge(metricsName, utils.Gauge(v.Field(i).Interface().(float64)))
+					sm.metricsRepository.SetValueGauge(metricsName, utils.Gauge(v.Field(i).Interface().(float64)))
 
 				}
 
 			}
 
 		}
-		sm.metrics.SetGauge("pollCount", utils.Gauge(float64(pollCount)))
-		sm.metrics.SetGauge("RandomValue", utils.Gauge(float64(rand.Float64())))
+		sm.metricsRepository.SetValueCounter("pollCount", utils.Counter(pollCount))
+		sm.metricsRepository.SetValueGauge("RandomValue", utils.Gauge(float64(rand.Float64())))
 
 	}
 }
 
 func (sm *ServiceMetrics) Post(metricsType string, metricName string, metricValue string, url string) (string, error) {
 	r := bytes.NewReader([]byte{})
-	fmt.Println("URL ", url+metricsType+"/"+metricName+"/"+metricValue)
-	resp, err := http.Post(url+metricsType+"/"+metricName+"/"+metricValue, "text/plain", r)
+
+	resp, err := http.Post(fmt.Sprintf("%s%s/%s/%s", url, metricsType, metricName, metricValue), "text/plain", r)
 	if err != nil {
-		panic(err)
+		fmt.Println("Can't post message", err)
 	}
 	defer resp.Body.Close()
 
@@ -149,9 +150,10 @@ func (sm *ServiceMetrics) Post(metricsType string, metricName string, metricValu
 }
 
 func (sm *ServiceMetrics) PostMessage() {
-	addr := "http://" + sm.cfg.Port + "/update/"
+	addr := fmt.Sprintf("http://%s/update/", sm.cfg.Port)
+
 	for {
-		for name, value := range sm.metrics.MetricStorageAgent.GetAllGauge() {
+		for name, value := range sm.metricsRepository.GetAllGauge() {
 			fmt.Println("v", value)
 			body, err := sm.Post("gauge", name, strconv.FormatFloat(float64(value), 'f', -1, 64), addr)
 
@@ -162,7 +164,7 @@ func (sm *ServiceMetrics) PostMessage() {
 			fmt.Println("data was sent successfuly", body)
 		}
 
-		for name, value := range sm.metrics.MetricStorageAgent.GetAllCounter() {
+		for name, value := range sm.metricsRepository.GetAllCounter() {
 			fmt.Println("v", value)
 			body, err := sm.Post("counter", name, strconv.FormatUint(uint64(value), 10), addr)
 

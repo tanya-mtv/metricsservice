@@ -2,28 +2,32 @@ package repository
 
 import "github.com/tanya-mtv/metricsservice/internal/utils"
 
-type MemStorageAgent struct {
+type MemRepositoryAgent struct {
 	// db *sqlx.DB
 	gaugeData   map[string]utils.Gauge
 	counterData map[string]utils.Counter
 }
 
-func NewMetricStorageAgent() *MemStorageAgent {
+func NewMetricRepositoryAgent() *MemRepositoryAgent {
 	// return &AuthPostgres{db: db}
-	return &MemStorageAgent{
+	return &MemRepositoryAgent{
 		gaugeData:   make(map[string]utils.Gauge),
 		counterData: make(map[string]utils.Counter),
 	}
 }
 
-func (m *MemStorageAgent) SetGauge(metricName string, value utils.Gauge) {
+func (m *MemRepositoryAgent) SetValueGauge(metricName string, value utils.Gauge) {
 	m.gaugeData[metricName] = value
 }
 
-func (m *MemStorageAgent) GetAllCounter() map[string]utils.Counter {
+func (m *MemRepositoryAgent) SetValueCounter(metricName string, value utils.Counter) {
+	m.counterData[metricName] = value
+}
+
+func (m *MemRepositoryAgent) GetAllCounter() map[string]utils.Counter {
 	return m.counterData
 }
 
-func (m *MemStorageAgent) GetAllGauge() map[string]utils.Gauge {
+func (m *MemRepositoryAgent) GetAllGauge() map[string]utils.Gauge {
 	return m.gaugeData
 }

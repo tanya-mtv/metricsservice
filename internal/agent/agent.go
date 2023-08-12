@@ -10,14 +10,13 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/metrics"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
-	"github.com/tanya-mtv/metricsservice/internal/servise"
 )
 
 type agent struct {
 	logger  logger.Logger
 	cfg     *config.ConfigAgent
 	metrics *metrics.ServiceMetrics
-	service *servise.Service
+	// service *servise.Service
 }
 
 func NewAgent(log logger.Logger, cfg *config.ConfigAgent) *agent {
@@ -33,8 +32,7 @@ func (a *agent) Run() error {
 
 	repos := repository.NewRepository(a.logger)
 
-	a.service = servise.NewServise(repos)
-	a.metrics = metrics.NewServiceMetrics(a.cfg, a.service)
+	a.metrics = metrics.NewServiceMetrics(a.cfg, repos)
 
 	go a.metrics.NewMonitor()
 

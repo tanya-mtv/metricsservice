@@ -8,7 +8,7 @@ import (
 )
 
 func TestUpdateCounter(t *testing.T) {
-	mem := NewMetricStorage()
+	mem := NewMetricRepository()
 
 	testStruct := []struct {
 		testname   string
@@ -33,7 +33,7 @@ func TestUpdateCounter(t *testing.T) {
 }
 
 func TestUpdateGauge(t *testing.T) {
-	mem := NewMetricStorage()
+	mem := NewMetricRepository()
 
 	testStruct := []struct {
 		testname   string

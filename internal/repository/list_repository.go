@@ -5,31 +5,31 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/utils"
 )
 
-type MemStorage struct {
+type MemRepository struct {
 	// db *sqlx.DB
 	gaugeData   map[string]utils.Gauge
 	counterData map[string]utils.Counter
 }
 
-func NewMetricStorage() *MemStorage {
+func NewMetricRepository() *MemRepository {
 	// return &AuthPostgres{db: db}
-	return &MemStorage{
+	return &MemRepository{
 		gaugeData:   make(map[string]utils.Gauge),
 		counterData: make(map[string]utils.Counter),
 	}
 }
 
-func (m *MemStorage) UpdateCounter(n string, v int64) utils.Counter {
+func (m *MemRepository) UpdateCounter(n string, v int64) utils.Counter {
 	m.counterData[n] += utils.Counter(v)
 	return m.counterData[n]
 }
 
-func (m *MemStorage) UpdateGauge(n string, v float64) utils.Gauge {
+func (m *MemRepository) UpdateGauge(n string, v float64) utils.Gauge {
 	m.gaugeData[n] = utils.Gauge(v)
 	return m.gaugeData[n]
 }
 
-func (m *MemStorage) GetAll() ([]models.Metrics, error) {
+func (m *MemRepository) GetAll() ([]models.Metrics, error) {
 	metricsSlice := make([]models.Metrics, 0)
 
 	for name, value := range m.counterData {
@@ -54,12 +54,12 @@ func (m *MemStorage) GetAll() ([]models.Metrics, error) {
 	return metricsSlice, nil
 }
 
-func (m *MemStorage) GetCounter(metricName string) (utils.Counter, bool) {
+func (m *MemRepository) GetCounter(metricName string) (utils.Counter, bool) {
 	res, found := m.counterData[metricName]
 	return res, found
 }
 
-func (m *MemStorage) GetGauge(metricName string) (utils.Gauge, bool) {
+func (m *MemRepository) GetGauge(metricName string) (utils.Gauge, bool) {
 	res, found := m.gaugeData[metricName]
 	return res, found
 }

@@ -9,15 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
-	"github.com/tanya-mtv/metricsservice/internal/servise"
 )
 
 func TestServiceMetrics_Post(t *testing.T) {
 	repos := &repository.Repository{
-		MetricStorageAgent: repository.NewMetricStorageAgent(),
+		MetricRepositoryAgent: repository.NewMetricRepositoryAgent(),
 	}
-	serv := servise.NewServise(repos)
-	sm := NewServiceMetrics(&config.ConfigAgent{}, serv)
+
+	sm := NewServiceMetrics(&config.ConfigAgent{}, repos)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 	}))
@@ -32,6 +31,7 @@ func TestServiceMetrics_Post(t *testing.T) {
 	}{
 		{"Post method gauge", "gauge", "Mallocs", "1277", "1277"},
 		{"Post method counter", "counter", "PollCount", "15", "15"},
+		// {"Post method counter", "counter", "PollCount", "15", "15"},
 	}
 
 	for _, tt := range tests {

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
-	"github.com/tanya-mtv/metricsservice/internal/servise"
 )
 
 func testRequest(t *testing.T, ts *httptest.Server, method,
@@ -26,19 +24,18 @@ func testRequest(t *testing.T, ts *httptest.Server, method,
 
 	respBody, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
-	fmt.Println("respBody", string(respBody))
+
 	return resp, string(respBody)
 }
 
 func TestRouter(t *testing.T) {
 	repos := &repository.Repository{
-		MetricStorage: repository.NewMetricStorage(),
+		MetricStorage: repository.NewMetricRepository(),
 	}
-	serv := servise.NewServise(repos)
 
 	handl := &Handler{
-		service: serv,
-		router:  gin.New(),
+		repository: repos,
+		router:     gin.New(),
 	}
 	ts := httptest.NewServer(handl.InitRoutes())
 	defer ts.Close()

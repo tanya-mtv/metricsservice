@@ -8,7 +8,7 @@ import (
 
 func main() {
 
-	cfg, err := config.InitConfigServer()
+	cfg, err := config.InitServer()
 	if err != nil {
 
 		panic("error initialazing config")

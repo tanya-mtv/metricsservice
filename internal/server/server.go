@@ -11,7 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
-	"github.com/tanya-mtv/metricsservice/internal/servise"
 
 	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/handler"
@@ -37,10 +36,10 @@ func (s *server) Run() error {
 	defer cancel()
 
 	repos := repository.NewRepository(s.logger)
-	serv := servise.NewServise(repos)
+
 	s.router = gin.New()
 
-	handl := handler.NewHandler(serv, s.logger, s.cfg, s.router)
+	handl := handler.NewHandler(repos, s.logger, s.cfg, s.router)
 
 	httpServer := &http.Server{
 		Addr:           s.cfg.Port,

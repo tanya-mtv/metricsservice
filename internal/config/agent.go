@@ -13,13 +13,12 @@ type ConfigAgent struct {
 }
 
 func InitAgent() (*ConfigAgent, error) {
-
 	var flagRunAddr string
 	var pollInterval int
 	var reportInterval int
 
 	cfg := &ConfigAgent{}
-	env.Parse(&cfg)
+	env.Parse(cfg)
 
 	flag.StringVar(&flagRunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.IntVar(&reportInterval, "r", 10, "report interval in seconds")

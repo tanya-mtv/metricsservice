@@ -26,7 +26,6 @@ type Repository struct {
 	MetricRepositoryAgent
 }
 
-// func NewRepository(db *sql.DB, log logger.Logger) *Repository {
 func NewRepository(log logger.Logger) *Repository {
 	return &Repository{
 		MetricStorage:         NewMetricRepository(),

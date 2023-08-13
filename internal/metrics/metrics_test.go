@@ -31,7 +31,6 @@ func TestServiceMetrics_Post(t *testing.T) {
 	}{
 		{"Post method gauge", "gauge", "Mallocs", "1277", "1277"},
 		{"Post method counter", "counter", "PollCount", "15", "15"},
-		// {"Post method counter", "counter", "PollCount", "15", "15"},
 	}
 
 	for _, tt := range tests {

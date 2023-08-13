@@ -3,13 +3,12 @@ package repository
 import "github.com/tanya-mtv/metricsservice/internal/utils"
 
 type MemRepositoryAgent struct {
-	// db *sqlx.DB
 	gaugeData   map[string]utils.Gauge
 	counterData map[string]utils.Counter
 }
 
 func NewMetricRepositoryAgent() *MemRepositoryAgent {
-	// return &AuthPostgres{db: db}
+
 	return &MemRepositoryAgent{
 		gaugeData:   make(map[string]utils.Gauge),
 		counterData: make(map[string]utils.Counter),

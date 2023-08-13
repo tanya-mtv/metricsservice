@@ -6,13 +6,12 @@ import (
 )
 
 type MemRepository struct {
-	// db *sqlx.DB
 	gaugeData   map[string]utils.Gauge
 	counterData map[string]utils.Counter
 }
 
 func NewMetricRepository() *MemRepository {
-	// return &AuthPostgres{db: db}
+
 	return &MemRepository{
 		gaugeData:   make(map[string]utils.Gauge),
 		counterData: make(map[string]utils.Counter),

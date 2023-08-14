@@ -93,24 +93,22 @@ func (sm *ServiceMetrics) PostMessage() {
 	for {
 		for name, value := range sm.metricsRepository.GetAllGauge() {
 
-			body, err := sm.Post("gauge", name, strconv.FormatFloat(float64(value), 'f', -1, 64), addr)
+			_, err := sm.Post("gauge", name, strconv.FormatFloat(float64(value), 'f', -1, 64), addr)
 
 			if err != nil {
-				panic("error reading body")
+				fmt.Println("error reading body", err)
 			}
 
-			fmt.Println("data was sent successfuly", body)
 		}
 
 		for name, value := range sm.metricsRepository.GetAllCounter() {
 
-			body, err := sm.Post("counter", name, strconv.FormatUint(uint64(value), 10), addr)
+			_, err := sm.Post("counter", name, strconv.FormatUint(uint64(value), 10), addr)
 
 			if err != nil {
-				panic("error reading body")
+				fmt.Println("error reading body", err)
 			}
 
-			fmt.Println("data was sent successfuly", body)
 		}
 
 		pollCount = 0

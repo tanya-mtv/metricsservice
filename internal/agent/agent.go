@@ -16,7 +16,6 @@ type agent struct {
 	logger  logger.Logger
 	cfg     *config.ConfigAgent
 	metrics *metrics.ServiceMetrics
-	// service *servise.Service
 }
 
 func NewAgent(log logger.Logger, cfg *config.ConfigAgent) *agent {

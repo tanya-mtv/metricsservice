@@ -6,22 +6,19 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/tanya-mtv/metricsservice/internal/config"
-	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
 type Handler struct {
-	repository *repository.RepositoryStorage
-	log        logger.Logger
+	repository *repository.MetricRepositoryStorage
 	cfg        *config.ConfigServer
 }
 
-func NewHandler(repository *repository.RepositoryStorage, log logger.Logger, cfg *config.ConfigServer) *Handler {
+func NewHandler(repository *repository.MetricRepositoryStorage, cfg *config.ConfigServer) *Handler {
 
 	return &Handler{
 		repository: repository,
-		log:        log,
 		cfg:        cfg,
 	}
 }

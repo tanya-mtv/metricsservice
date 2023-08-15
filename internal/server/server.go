@@ -10,20 +10,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/handler"
-	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
 type server struct {
-	logger logger.Logger
 	cfg    *config.ConfigServer
 	router *gin.Engine
 }
 
-func NewServer(log logger.Logger, cfg *config.ConfigServer) *server {
+func NewServer(cfg *config.ConfigServer) *server {
 	return &server{
-		logger: log,
-		cfg:    cfg,
+		cfg: cfg,
 	}
 }
 
@@ -31,11 +28,10 @@ func (s *server) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	repos := repository.NewRepositoryStorage(s.logger)
-
+	repos := repository.NewMetricRepositoryStorage()
 	s.router = gin.New()
 
-	h := handler.NewHandler(repos, s.logger, s.cfg)
+	h := handler.NewHandler(repos, s.cfg)
 
 	s.router.GET("/", h.GetAllMetrics())
 

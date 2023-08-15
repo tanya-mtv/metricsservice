@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
 
@@ -27,7 +26,7 @@ type RepositoryStorage struct {
 	metricRepositoryStorage
 }
 
-func NewRepositoryStorage(log logger.Logger) *RepositoryStorage {
+func NewRepositoryStorage() *RepositoryStorage {
 	return &RepositoryStorage{
 		metricRepositoryStorage: NewMetricRepositoryStorage(),
 	}
@@ -37,7 +36,7 @@ type RepositoryCollector struct {
 	metricRepositoryCollector
 }
 
-func NewRepositoryCollector(log logger.Logger) *RepositoryCollector {
+func NewRepositoryCollector() *RepositoryCollector {
 	return &RepositoryCollector{
 		metricRepositoryCollector: NewMetricRepositoryCollector(),
 	}

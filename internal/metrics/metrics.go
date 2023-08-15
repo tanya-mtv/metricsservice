@@ -18,10 +18,10 @@ var pollCount int64
 
 type ServiceMetrics struct {
 	cfg               *config.ConfigAgent
-	metricsRepository *repository.RepositoryCollector
+	metricsRepository *repository.MetricRepositoryCollector
 }
 
-func NewServiceMetrics(cfg *config.ConfigAgent, metricsRepository *repository.RepositoryCollector) *ServiceMetrics {
+func NewServiceMetrics(cfg *config.ConfigAgent, metricsRepository *repository.MetricRepositoryCollector) *ServiceMetrics {
 
 	return &ServiceMetrics{
 		cfg:               cfg,
@@ -29,7 +29,7 @@ func NewServiceMetrics(cfg *config.ConfigAgent, metricsRepository *repository.Re
 	}
 }
 
-func (sm *ServiceMetrics) NewMonitor() {
+func (sm *ServiceMetrics) MetricsMonitor() {
 
 	var rtm runtime.MemStats
 	interval := time.Duration(sm.cfg.PollInterval) * time.Second

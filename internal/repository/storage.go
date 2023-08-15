@@ -38,8 +38,7 @@ func (m *MetricRepositoryStorage) UpdateGauge(n string, v float64) Gauge {
 }
 
 func (m *MetricRepositoryStorage) GetAll() ([]models.Metrics, error) {
-	metricsSlice := make([]models.Metrics, 0)
-
+	metricsSlice := make([]models.Metrics, 29)
 	for name, value := range m.counterData {
 
 		data := models.Metrics{

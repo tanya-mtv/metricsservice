@@ -7,21 +7,18 @@ import (
 	"syscall"
 
 	"github.com/tanya-mtv/metricsservice/internal/config"
-	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/metrics"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
 type agent struct {
-	logger  logger.Logger
 	cfg     *config.ConfigAgent
 	metrics *metrics.ServiceMetrics
 }
 
-func NewAgent(log logger.Logger, cfg *config.ConfigAgent) *agent {
+func NewAgent(cfg *config.ConfigAgent) *agent {
 	return &agent{
-		logger: log,
-		cfg:    cfg,
+		cfg: cfg,
 	}
 }
 
@@ -29,11 +26,11 @@ func (a *agent) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	repos := repository.NewRepositoryCollector(a.logger)
+	repos := repository.NewMetricRepositoryCollector()
 
 	a.metrics = metrics.NewServiceMetrics(a.cfg, repos)
 
-	go a.metrics.NewMonitor()
+	go a.metrics.MetricsMonitor()
 
 	go a.metrics.PostMessage()
 

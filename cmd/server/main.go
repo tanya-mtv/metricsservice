@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/tanya-mtv/metricsservice/internal/config"
-	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/server"
 )
 
@@ -13,8 +12,8 @@ func main() {
 
 		panic("error initialazing config")
 	}
-	appLogger := logger.NewAppLogger()
-	srv := server.NewServer(appLogger, cfg)
+
+	srv := server.NewServer(cfg)
 
 	if err := srv.Run(); err != nil {
 		panic(err)

@@ -29,7 +29,7 @@ type RepositoryStorage struct {
 
 func NewRepositoryStorage(log logger.Logger) *RepositoryStorage {
 	return &RepositoryStorage{
-		metricRepositoryStorage: NewMetricRepository(),
+		metricRepositoryStorage: NewMetricRepositoryStorage(),
 	}
 }
 

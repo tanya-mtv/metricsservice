@@ -37,14 +37,14 @@ func (s *server) Run() error {
 
 	h := handler.NewHandler(repos, s.logger, s.cfg)
 
-	s.router.GET("/", h.GetAllMetrics(repos))
+	s.router.GET("/", h.GetAllMetrics())
 
-	s.router.POST("/update/:metricType/:metricName/:metricValue", h.PostMetrics(repos))
+	s.router.POST("/update/:metricType/:metricName/:metricValue", h.PostMetrics())
 
 	value := s.router.Group("/value")
 	{
-		value.GET("/counter/:metricName", h.GetMethodCounter(repos))
-		value.GET("/gauge/:metricName", h.GetMethodGauge(repos))
+		value.GET("/counter/:metricName", h.GetMethodCounter())
+		value.GET("/gauge/:metricName", h.GetMethodGauge())
 	}
 
 	go func() {

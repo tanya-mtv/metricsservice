@@ -18,6 +18,7 @@ type Handler struct {
 }
 
 func NewHandler(repository *repository.RepositoryStorage, log logger.Logger, cfg *config.ConfigServer) *Handler {
+
 	return &Handler{
 		repository: repository,
 		log:        log,
@@ -25,7 +26,7 @@ func NewHandler(repository *repository.RepositoryStorage, log logger.Logger, cfg
 	}
 }
 
-func (h *Handler) GetMethodCounter(repository *repository.RepositoryStorage) gin.HandlerFunc {
+func (h *Handler) GetMethodCounter() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		metricName := c.Param("metricName")
 
@@ -41,7 +42,7 @@ func (h *Handler) GetMethodCounter(repository *repository.RepositoryStorage) gin
 
 }
 
-func (h *Handler) GetMethodGauge(repository *repository.RepositoryStorage) gin.HandlerFunc {
+func (h *Handler) GetMethodGauge() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		metricName := c.Param("metricName")
 
@@ -57,7 +58,7 @@ func (h *Handler) GetMethodGauge(repository *repository.RepositoryStorage) gin.H
 
 }
 
-func (h *Handler) PostMetrics(repository *repository.RepositoryStorage) gin.HandlerFunc {
+func (h *Handler) PostMetrics() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		metricType := c.Param("metricType")
 		metricName := c.Param("metricName")
@@ -91,9 +92,9 @@ func (h *Handler) PostMetrics(repository *repository.RepositoryStorage) gin.Hand
 	}
 }
 
-func (h *Handler) GetAllMetrics(repository *repository.RepositoryStorage) gin.HandlerFunc {
+func (h *Handler) GetAllMetrics() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		metrics, err := repository.GetAll()
+		metrics, err := h.repository.GetAll()
 		if err != nil {
 			newErrorResponse(c, http.StatusInternalServerError, err.Error())
 			return

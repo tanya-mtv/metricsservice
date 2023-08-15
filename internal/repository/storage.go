@@ -13,7 +13,7 @@ type MetricRepositoryStorage struct {
 	gaugesLock   sync.Mutex
 }
 
-func NewMetricRepository() *MetricRepositoryStorage {
+func NewMetricRepositoryStorage() *MetricRepositoryStorage {
 
 	return &MetricRepositoryStorage{
 		gaugeData:   make(map[string]Gauge),

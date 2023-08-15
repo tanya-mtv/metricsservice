@@ -12,9 +12,7 @@ import (
 )
 
 func TestServiceMetrics_Post(t *testing.T) {
-	repos := &repository.Repository{
-		MetricRepositoryAgent: repository.NewMetricRepositoryAgent(),
-	}
+	repos := &repository.RepositoryCollector{}
 
 	sm := NewServiceMetrics(&config.ConfigAgent{}, repos)
 

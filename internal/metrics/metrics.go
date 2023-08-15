@@ -12,18 +12,16 @@ import (
 
 	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
-
-	"github.com/tanya-mtv/metricsservice/internal/utils"
 )
 
 var pollCount int64
 
 type ServiceMetrics struct {
 	cfg               *config.ConfigAgent
-	metricsRepository *repository.Repository
+	metricsRepository *repository.RepositoryCollector
 }
 
-func NewServiceMetrics(cfg *config.ConfigAgent, metricsRepository *repository.Repository) *ServiceMetrics {
+func NewServiceMetrics(cfg *config.ConfigAgent, metricsRepository *repository.RepositoryCollector) *ServiceMetrics {
 
 	return &ServiceMetrics{
 		cfg:               cfg,
@@ -40,36 +38,36 @@ func (sm *ServiceMetrics) NewMonitor() {
 		pollCount += 1
 
 		runtime.ReadMemStats(&rtm)
-		sm.metricsRepository.SetValueGauge("Alloc", utils.Gauge(rtm.Alloc))
-		sm.metricsRepository.SetValueGauge("BuckHashSys", utils.Gauge(rtm.BuckHashSys))
-		sm.metricsRepository.SetValueGauge("Frees", utils.Gauge(rtm.Frees))
-		sm.metricsRepository.SetValueGauge("GCCPUFraction", utils.Gauge(rtm.GCCPUFraction))
-		sm.metricsRepository.SetValueGauge("GCSys", utils.Gauge(rtm.GCSys))
-		sm.metricsRepository.SetValueGauge("HeapAlloc", utils.Gauge(rtm.HeapAlloc))
-		sm.metricsRepository.SetValueGauge("HeapIdle", utils.Gauge(rtm.HeapIdle))
-		sm.metricsRepository.SetValueGauge("HeapInuse", utils.Gauge(rtm.HeapInuse))
-		sm.metricsRepository.SetValueGauge("HeapObjects", utils.Gauge(rtm.HeapObjects))
-		sm.metricsRepository.SetValueGauge("HeapReleased", utils.Gauge(rtm.HeapReleased))
-		sm.metricsRepository.SetValueGauge("HeapSys", utils.Gauge(rtm.HeapSys))
-		sm.metricsRepository.SetValueGauge("LastGC", utils.Gauge(rtm.LastGC))
-		sm.metricsRepository.SetValueGauge("Lookups", utils.Gauge(rtm.Lookups))
-		sm.metricsRepository.SetValueGauge("MCacheInuse", utils.Gauge(rtm.MCacheInuse))
-		sm.metricsRepository.SetValueGauge("MCacheSys", utils.Gauge(rtm.MCacheSys))
-		sm.metricsRepository.SetValueGauge("MSpanInuse", utils.Gauge(rtm.MSpanInuse))
-		sm.metricsRepository.SetValueGauge("MSpanSys", utils.Gauge(rtm.MSpanSys))
-		sm.metricsRepository.SetValueGauge("Mallocs", utils.Gauge(rtm.Mallocs))
-		sm.metricsRepository.SetValueGauge("NextGC", utils.Gauge(rtm.NextGC))
-		sm.metricsRepository.SetValueGauge("NumForcedGC", utils.Gauge(rtm.NumForcedGC))
-		sm.metricsRepository.SetValueGauge("NumGC", utils.Gauge(rtm.NumGC))
-		sm.metricsRepository.SetValueGauge("OtherSys", utils.Gauge(rtm.OtherSys))
-		sm.metricsRepository.SetValueGauge("PauseTotalNs", utils.Gauge(rtm.PauseTotalNs))
-		sm.metricsRepository.SetValueGauge("StackInuse", utils.Gauge(rtm.StackInuse))
-		sm.metricsRepository.SetValueGauge("StackSys", utils.Gauge(rtm.StackSys))
-		sm.metricsRepository.SetValueGauge("Sys", utils.Gauge(rtm.Sys))
-		sm.metricsRepository.SetValueGauge("TotalAlloc", utils.Gauge(rtm.TotalAlloc))
+		sm.metricsRepository.SetValueGauge("Alloc", repository.Gauge(rtm.Alloc))
+		sm.metricsRepository.SetValueGauge("BuckHashSys", repository.Gauge(rtm.BuckHashSys))
+		sm.metricsRepository.SetValueGauge("Frees", repository.Gauge(rtm.Frees))
+		sm.metricsRepository.SetValueGauge("GCCPUFraction", repository.Gauge(rtm.GCCPUFraction))
+		sm.metricsRepository.SetValueGauge("GCSys", repository.Gauge(rtm.GCSys))
+		sm.metricsRepository.SetValueGauge("HeapAlloc", repository.Gauge(rtm.HeapAlloc))
+		sm.metricsRepository.SetValueGauge("HeapIdle", repository.Gauge(rtm.HeapIdle))
+		sm.metricsRepository.SetValueGauge("HeapInuse", repository.Gauge(rtm.HeapInuse))
+		sm.metricsRepository.SetValueGauge("HeapObjects", repository.Gauge(rtm.HeapObjects))
+		sm.metricsRepository.SetValueGauge("HeapReleased", repository.Gauge(rtm.HeapReleased))
+		sm.metricsRepository.SetValueGauge("HeapSys", repository.Gauge(rtm.HeapSys))
+		sm.metricsRepository.SetValueGauge("LastGC", repository.Gauge(rtm.LastGC))
+		sm.metricsRepository.SetValueGauge("Lookups", repository.Gauge(rtm.Lookups))
+		sm.metricsRepository.SetValueGauge("MCacheInuse", repository.Gauge(rtm.MCacheInuse))
+		sm.metricsRepository.SetValueGauge("MCacheSys", repository.Gauge(rtm.MCacheSys))
+		sm.metricsRepository.SetValueGauge("MSpanInuse", repository.Gauge(rtm.MSpanInuse))
+		sm.metricsRepository.SetValueGauge("MSpanSys", repository.Gauge(rtm.MSpanSys))
+		sm.metricsRepository.SetValueGauge("Mallocs", repository.Gauge(rtm.Mallocs))
+		sm.metricsRepository.SetValueGauge("NextGC", repository.Gauge(rtm.NextGC))
+		sm.metricsRepository.SetValueGauge("NumForcedGC", repository.Gauge(rtm.NumForcedGC))
+		sm.metricsRepository.SetValueGauge("NumGC", repository.Gauge(rtm.NumGC))
+		sm.metricsRepository.SetValueGauge("OtherSys", repository.Gauge(rtm.OtherSys))
+		sm.metricsRepository.SetValueGauge("PauseTotalNs", repository.Gauge(rtm.PauseTotalNs))
+		sm.metricsRepository.SetValueGauge("StackInuse", repository.Gauge(rtm.StackInuse))
+		sm.metricsRepository.SetValueGauge("StackSys", repository.Gauge(rtm.StackSys))
+		sm.metricsRepository.SetValueGauge("Sys", repository.Gauge(rtm.Sys))
+		sm.metricsRepository.SetValueGauge("TotalAlloc", repository.Gauge(rtm.TotalAlloc))
 
-		sm.metricsRepository.SetValueCounter("pollCount", utils.Counter(pollCount))
-		sm.metricsRepository.SetValueGauge("RandomValue", utils.Gauge(float64(rand.Float64())))
+		sm.metricsRepository.SetValueCounter("pollCount", repository.Counter(pollCount))
+		sm.metricsRepository.SetValueGauge("RandomValue", repository.Gauge(float64(rand.Float64())))
 
 	}
 }
@@ -78,6 +76,7 @@ func (sm *ServiceMetrics) Post(metricsType string, metricName string, metricValu
 	r := bytes.NewReader([]byte{})
 
 	resp, err := http.Post(fmt.Sprintf("%s%s/%s/%s", url, metricsType, metricName, metricValue), "text/plain", r)
+
 	if err != nil {
 		fmt.Println("Can't post message", err)
 	}
@@ -91,6 +90,7 @@ func (sm *ServiceMetrics) PostMessage() {
 	addr := fmt.Sprintf("http://%s/update/", sm.cfg.Port)
 
 	for {
+
 		for name, value := range sm.metricsRepository.GetAllGauge() {
 
 			_, err := sm.Post("gauge", name, strconv.FormatFloat(float64(value), 'f', -1, 64), addr)

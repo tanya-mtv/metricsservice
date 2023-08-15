@@ -2,8 +2,7 @@ package utils
 
 import "strconv"
 
-type Gauge float64
-type Counter int64
+
 
 func CounterToBytes(number Counter) []byte {
 

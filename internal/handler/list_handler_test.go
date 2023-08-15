@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
@@ -29,15 +28,15 @@ func testRequest(t *testing.T, ts *httptest.Server, method,
 }
 
 func TestRouter(t *testing.T) {
-	repos := &repository.Repository{
-		MetricStorage: repository.NewMetricRepository(),
+	repos := &repository.MemRepository{
+		gaugeData:   make(map[string]repository.Gauge),
+		counterData: make(map[string]repository.Counter),
 	}
 
 	handl := &Handler{
 		repository: repos,
-		router:     gin.New(),
 	}
-	ts := httptest.NewServer(handl.InitRoutes())
+	ts := httptest.NewServer(handl.PostMetrics(repos))
 	defer ts.Close()
 
 	var testTableStatus = []struct {

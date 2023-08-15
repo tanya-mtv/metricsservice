@@ -29,7 +29,7 @@ func (a *agent) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	repos := repository.NewRepository(a.logger)
+	repos := repository.NewRepositoryCollector(a.logger)
 
 	a.metrics = metrics.NewServiceMetrics(a.cfg, repos)
 

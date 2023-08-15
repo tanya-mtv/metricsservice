@@ -3,25 +3,21 @@ package server
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/tanya-mtv/metricsservice/internal/repository"
-
 	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/handler"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
+	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
 type server struct {
-	logger     logger.Logger
-	httpServer *http.Server
-	cfg        *config.ConfigServer
-	router     *gin.Engine
+	logger logger.Logger
+	cfg    *config.ConfigServer
+	router *gin.Engine
 }
 
 func NewServer(log logger.Logger, cfg *config.ConfigServer) *server {
@@ -35,26 +31,27 @@ func (s *server) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	repos := repository.NewRepository(s.logger)
+	repos := repository.NewRepositoryStorage(s.logger)
 
 	s.router = gin.New()
 
-	handl := handler.NewHandler(repos, s.logger, s.cfg, s.router)
+	h := handler.NewHandler(repos, s.logger, s.cfg)
 
-	httpServer := &http.Server{
-		Addr:           s.cfg.Port,
-		Handler:        handl.InitRoutes(),
-		MaxHeaderBytes: 1 << 20,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
+	s.router.GET("/", h.GetAllMetrics(repos))
+
+	s.router.POST("/update/:metricType/:metricName/:metricValue", h.PostMetrics(repos))
+
+	value := s.router.Group("/value")
+	{
+		value.GET("/counter/:metricName", h.GetMethodCounter(repos))
+		value.GET("/gauge/:metricName", h.GetMethodGauge(repos))
 	}
-	s.httpServer = httpServer
 
 	go func() {
 
-		if err := s.httpServer.ListenAndServe(); err != nil {
+		if err := s.router.Run(s.cfg.Port); err != nil {
 
-			fmt.Println("ListenAndServe")
+			fmt.Println("Can't ListenAndServe on port", s.cfg.Port)
 		}
 	}()
 

@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tanya-mtv/metricsservice/internal/utils"
 )
 
 func TestUpdateCounter(t *testing.T) {
@@ -26,7 +25,7 @@ func TestUpdateCounter(t *testing.T) {
 	for _, test := range testStruct {
 		t.Run(test.testname, func(t *testing.T) {
 			mem.UpdateCounter(test.metricname, test.value)
-			assert.Equal(t, utils.Counter(test.result), mem.counterData[test.metricname])
+			assert.Equal(t, Counter(test.result), mem.counterData[test.metricname])
 		})
 
 	}
@@ -50,7 +49,7 @@ func TestUpdateGauge(t *testing.T) {
 	for _, test := range testStruct {
 		t.Run(test.testname, func(t *testing.T) {
 			mem.UpdateGauge(test.metricname, test.value)
-			assert.Equal(t, utils.Gauge(test.result), utils.Gauge(mem.gaugeData[test.metricname]))
+			assert.Equal(t, Gauge(test.result), Gauge(mem.gaugeData[test.metricname]))
 		})
 
 	}

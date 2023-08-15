@@ -26,11 +26,7 @@ type RepositoryStorage struct {
 	metricRepositoryStorage
 }
 
-func NewRepositoryStorage() *RepositoryStorage {
-	return &RepositoryStorage{
-		metricRepositoryStorage: NewMetricRepositoryStorage(),
-	}
-}
+
 
 type RepositoryCollector struct {
 	metricRepositoryCollector

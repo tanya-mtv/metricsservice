@@ -2,12 +2,15 @@ package config
 
 import (
 	"flag"
-	"fmt"
 	"os"
+
+	"github.com/tanya-mtv/metricsservice/internal/constants"
+	"github.com/tanya-mtv/metricsservice/internal/logger"
 )
 
 type ConfigServer struct {
-	Port string
+	Port   string
+	Logger *logger.Config
 }
 
 func InitServer() (*ConfigServer, error) {
@@ -22,9 +25,15 @@ func InitServer() (*ConfigServer, error) {
 		flagRunAddr = envRunAddr
 	}
 
-	fmt.Println("flagRunAddr", flagRunAddr)
+	cfglog := &logger.Config{
+		LogLevel: constants.LogLevel,
+		DevMode:  constants.DevMode,
+		Type:     constants.Type,
+	}
+
 	cfg := &ConfigServer{
-		Port: flagRunAddr,
+		Port:   flagRunAddr,
+		Logger: cfglog,
 	}
 
 	return cfg, nil

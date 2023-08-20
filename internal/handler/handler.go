@@ -78,16 +78,8 @@ func (h *Handler) GetMethodCounter() gin.HandlerFunc {
 			newErrorResponse(c, http.StatusNotFound, "Metric not found")
 			return
 		}
-		tmp := int64(cnt)
-
-		metric := models.Metrics{
-			ID:    metricName,
-			MType: "counter",
-			Delta: &tmp,
-		}
-
-		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-		c.JSON(http.StatusOK, metric)
+		c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		c.JSON(http.StatusOK, cnt)
 	}
 
 }
@@ -102,16 +94,58 @@ func (h *Handler) GetMethodGauge() gin.HandlerFunc {
 			newErrorResponse(c, http.StatusNotFound, "Metric not found")
 			return
 		}
-		tmp := float64(gug)
+		c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		c.JSON(http.StatusOK, gug)
+	}
 
-		metric := models.Metrics{
-			ID:    metricName,
-			MType: "gauge",
-			Value: &tmp,
+}
+
+func (h *Handler) PostMetricsValueJSON(log logger.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var metric models.Metrics
+		jsonData, _ := io.ReadAll(c.Request.Body)
+		if err := json.Unmarshal(jsonData, &metric); err != nil {
+			log.Error(err)
 		}
 
-		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-		c.JSON(http.StatusOK, metric)
+		switch metric.MType {
+		case "counter":
+			cnt, found := h.repository.GetCounter(metric.ID)
+
+			if !found {
+				newErrorResponse(c, http.StatusNotFound, "Metric not found")
+				return
+			}
+			tmp := int64(cnt)
+
+			metric := models.Metrics{
+				ID:    metric.ID,
+				MType: "counter",
+				Delta: &tmp,
+			}
+
+			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+			c.JSON(http.StatusOK, metric)
+		case "gauge":
+			gug, found := h.repository.GetGauge(metric.ID)
+
+			if !found {
+				newErrorResponse(c, http.StatusNotFound, "Metric not found")
+				return
+			}
+			tmp := float64(gug)
+
+			metric := models.Metrics{
+				ID:    metric.ID,
+				MType: "gauge",
+				Value: &tmp,
+			}
+
+			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+			c.JSON(http.StatusOK, metric)
+		default:
+			c.JSON(http.StatusBadRequest, 0)
+		}
 
 	}
 
@@ -151,7 +185,7 @@ func (h *Handler) PostMetrics() gin.HandlerFunc {
 	}
 }
 
-func (h *Handler) PostMetricsJSON(log logger.Logger) gin.HandlerFunc {
+func (h *Handler) PostMetricsUpdateJSON(log logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var metric models.Metrics
 

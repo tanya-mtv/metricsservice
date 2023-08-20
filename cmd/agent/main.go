@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/tanya-mtv/metricsservice/internal/agent"
 	"github.com/tanya-mtv/metricsservice/internal/config"
+	"github.com/tanya-mtv/metricsservice/internal/logger"
 )
 
 func main() {
@@ -12,10 +13,13 @@ func main() {
 		panic("error initialazing config")
 	}
 
-	ag := agent.NewAgent(cfg)
+	appLogger := logger.NewAppLogger(cfg.Logger)
+	appLogger.InitLogger()
+
+	ag := agent.NewAgent(cfg, appLogger)
 
 	if err := ag.Run(); err != nil {
-		panic(err)
+		appLogger.Fatal(err)
 	}
 
 }

@@ -2,15 +2,18 @@ package metrics
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
 	"runtime"
-	"strconv"
 	"time"
 
+	"github.com/tanya-mtv/metricsservice/internal/logger"
+
 	"github.com/tanya-mtv/metricsservice/internal/config"
+	"github.com/tanya-mtv/metricsservice/internal/models"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
@@ -72,41 +75,58 @@ func (sm *ServiceMetrics) MetricsMonitor() {
 	}
 }
 
-func (sm *ServiceMetrics) Post(metricsType string, metricName string, metricValue string, url string) (string, error) {
-	r := bytes.NewReader([]byte{})
+func (sm *ServiceMetrics) Post(metric *models.Metrics, url string, log logger.Logger) (string, error) {
 
-	resp, err := http.Post(fmt.Sprintf("%s%s/%s/%s", url, metricsType, metricName, metricValue), "text/plain", r)
+	data, err := json.Marshal(&metric)
+	if err != nil {
+		log.Debug("Can't post message")
+		return "", err
+	}
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
 
 	if err != nil {
-		fmt.Println("Can't post message", err)
+		log.Debug("Can't post message")
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	return string(body), err
 }
+func newMetric(metricName, metricsType string) *models.Metrics {
 
-func (sm *ServiceMetrics) PostMessage() {
-	addr := fmt.Sprintf("http://%s/update/", sm.cfg.Port)
+	return &models.Metrics{
+		ID:    metricName,
+		MType: metricsType,
+	}
+}
+func (sm *ServiceMetrics) PostMessage(log logger.Logger) {
+	addr := fmt.Sprintf("http://%s/update", sm.cfg.Port)
 
 	for {
 
 		for name, value := range sm.metricsRepository.GetAllGauge() {
+			data := newMetric(name, "gauge")
+			tmp := float64(value)
+			data.Value = &tmp
 
-			_, err := sm.Post("gauge", name, strconv.FormatFloat(float64(value), 'f', -1, 64), addr)
+			// fmt.Printf("111111 %+v\n", data)
+			_, err := sm.Post(data, addr, log)
 
 			if err != nil {
-				fmt.Println("error reading body", err)
+				log.Info(err)
 			}
 
 		}
 
 		for name, value := range sm.metricsRepository.GetAllCounter() {
-
-			_, err := sm.Post("counter", name, strconv.FormatUint(uint64(value), 10), addr)
+			data := newMetric(name, "counter")
+			tmp := int64(value)
+			data.Delta = &tmp
+			_, err := sm.Post(data, addr, log)
 
 			if err != nil {
-				fmt.Println("error reading body", err)
+				log.Info(err)
 			}
 
 		}

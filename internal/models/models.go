@@ -1,8 +1,8 @@
 package models
 
 type Metrics struct {
-	ID         string
-	MetricType string
-	CountValue int64
-	GaugeValue float64
+	ID    string   `json:"id"`              // имя метрики
+	MType string   `json:"type"`            // параметр, принимающий значение gauge или counter
+	Delta *int64   `json:"delta,omitempty"` // значение метрики в случае передачи counter
+	Value *float64 `json:"value,omitempty"` // значение метрики в случае передачи gauge
 }

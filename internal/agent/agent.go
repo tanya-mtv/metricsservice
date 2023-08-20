@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/tanya-mtv/metricsservice/internal/config"
+	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/metrics"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
@@ -14,11 +15,13 @@ import (
 type agent struct {
 	cfg     *config.ConfigAgent
 	metrics *metrics.ServiceMetrics
+	log     logger.Logger
 }
 
-func NewAgent(cfg *config.ConfigAgent) *agent {
+func NewAgent(cfg *config.ConfigAgent, log logger.Logger) *agent {
 	return &agent{
 		cfg: cfg,
+		log: log,
 	}
 }
 
@@ -32,7 +35,7 @@ func (a *agent) Run() error {
 
 	go a.metrics.MetricsMonitor()
 
-	go a.metrics.PostMessage()
+	go a.metrics.PostMessage(a.log)
 
 	<-ctx.Done()
 	return nil

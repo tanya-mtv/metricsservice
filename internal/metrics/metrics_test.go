@@ -6,6 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/tanya-mtv/metricsservice/internal/models"
+
+	"github.com/tanya-mtv/metricsservice/internal/constants"
+	"github.com/tanya-mtv/metricsservice/internal/logger"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
@@ -20,20 +25,40 @@ func TestServiceMetrics_Post(t *testing.T) {
 	}))
 	addr := server.URL + "/update/"
 	fmt.Println("addr ", addr)
-	var tests = []struct {
-		nameTest     string
-		metricType   string
-		metricName   string
-		metricValue  string
-		expectedBody string
-	}{
-		{"Post method gauge", "gauge", "Mallocs", "1277", "1277"},
-		{"Post method counter", "counter", "PollCount", "15", "15"},
+
+	tmp1 := float64(1.222233)
+	metric1 := &models.Metrics{
+		ID:    "Alloc",
+		MType: "gauge",
+		Value: &tmp1,
 	}
 
+	tmp2 := int64(1)
+	metric2 := &models.Metrics{
+		ID:    "pollCount",
+		MType: "counter",
+		Delta: &tmp2,
+	}
+
+	var tests = []struct {
+		nameTest     string
+		body         *models.Metrics
+		expectedBody string
+	}{
+		{"Post method gauge", metric1, ""},
+		{"Post method counter", metric2, ""},
+	}
+
+	cfglog := &logger.Config{
+		LogLevel: constants.LogLevel,
+		DevMode:  constants.DevMode,
+		Type:     constants.Type,
+	}
+	log := logger.NewAppLogger(cfglog)
 	for _, tt := range tests {
 		t.Run(tt.nameTest, func(t *testing.T) {
-			_, err := sm.Post(tt.metricType, tt.metricName, tt.metricValue, addr)
+
+			_, err := sm.Post(tt.body, addr, log)
 
 			assert.NoError(t, err, "error making HTTP request")
 

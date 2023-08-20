@@ -4,12 +4,15 @@ import (
 	"flag"
 
 	"github.com/caarlos0/env"
+	"github.com/tanya-mtv/metricsservice/internal/constants"
+	"github.com/tanya-mtv/metricsservice/internal/logger"
 )
 
 type ConfigAgent struct {
 	Port           string `env:"ADDRESS"`
 	ReportInterval int    `env:"REPORT_INTERVAL"`
 	PollInterval   int    `env:"POLL_INTERVAL"`
+	Logger         *logger.Config
 }
 
 func InitAgent() (*ConfigAgent, error) {
@@ -36,6 +39,14 @@ func InitAgent() (*ConfigAgent, error) {
 	if cfg.Port == "" {
 		cfg.Port = flagRunAddr
 	}
+
+	cfglog := &logger.Config{
+		LogLevel: constants.LogLevel,
+		DevMode:  constants.DevMode,
+		Type:     constants.Type,
+	}
+
+	cfg.Logger = cfglog
 
 	return cfg, nil
 }

@@ -68,6 +68,8 @@ type Logger interface {
 	Fatal(args ...interface{})
 	Info(args ...interface{})
 	Infoln(args ...interface{})
+	Debug(args ...interface{})
+	Error(args ...interface{})
 }
 
 func (l *appLogger) Fatal(args ...interface{}) {
@@ -80,4 +82,11 @@ func (l *appLogger) Info(args ...interface{}) {
 
 func (l *appLogger) Infoln(args ...interface{}) {
 	l.sugarLogger.Infoln(args...)
+}
+func (l *appLogger) Debug(args ...interface{}) {
+	l.sugarLogger.Debug(args...)
+}
+
+func (l *appLogger) Error(args ...interface{}) {
+	l.sugarLogger.Error(args...)
 }

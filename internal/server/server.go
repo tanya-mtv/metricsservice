@@ -40,7 +40,7 @@ func (s *server) Run() error {
 	s.router.GET("/", h.GetAllMetrics(s.log))
 
 	s.router.POST("/update/", h.PostMetricsJSON(s.log))
-	// s.router.POST("/update/:metricType/:metricName/:metricValue", h.PostMetrics())
+	s.router.POST("/update/:metricType/:metricName/:metricValue", h.PostMetrics())
 
 	value := s.router.Group("/value")
 	{

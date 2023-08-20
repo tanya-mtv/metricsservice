@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/tanya-mtv/metricsservice/internal/logger"
@@ -17,11 +18,33 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
-var pollCount int64
+type counter struct {
+	num int64
+	sync.Mutex
+}
+
+func (c *counter) Inc() {
+	c.Lock()
+	defer c.Unlock()
+
+	c.num += 1
+}
+
+func (c *counter) Value() int64 {
+	return c.num
+}
+
+func (c *counter) NilValue() {
+	c.Lock()
+	defer c.Unlock()
+
+	c.num = 0
+}
 
 type ServiceMetrics struct {
 	cfg               *config.ConfigAgent
 	metricsRepository *repository.MetricRepositoryCollector
+	counter           *counter
 }
 
 func NewServiceMetrics(cfg *config.ConfigAgent, metricsRepository *repository.MetricRepositoryCollector) *ServiceMetrics {
@@ -29,6 +52,9 @@ func NewServiceMetrics(cfg *config.ConfigAgent, metricsRepository *repository.Me
 	return &ServiceMetrics{
 		cfg:               cfg,
 		metricsRepository: metricsRepository,
+		counter: &counter{
+			num: 0,
+		},
 	}
 }
 
@@ -38,7 +64,7 @@ func (sm *ServiceMetrics) MetricsMonitor() {
 	interval := time.Duration(sm.cfg.PollInterval) * time.Second
 	for {
 		time.Sleep(interval)
-		pollCount += 1
+		sm.counter.Inc()
 
 		runtime.ReadMemStats(&rtm)
 		sm.metricsRepository.SetValueGauge("Alloc", repository.Gauge(rtm.Alloc))
@@ -69,9 +95,7 @@ func (sm *ServiceMetrics) MetricsMonitor() {
 		sm.metricsRepository.SetValueGauge("Sys", repository.Gauge(rtm.Sys))
 		sm.metricsRepository.SetValueGauge("TotalAlloc", repository.Gauge(rtm.TotalAlloc))
 
-		fmt.Println("11111111111 ", pollCount)
-
-		sm.metricsRepository.SetValueCounter("pollCount", repository.Counter(pollCount))
+		sm.metricsRepository.SetValueCounter("PollCount", repository.Counter(sm.counter.Value()))
 		sm.metricsRepository.SetValueGauge("RandomValue", repository.Gauge(float64(rand.Float64())))
 
 	}
@@ -125,6 +149,7 @@ func (sm *ServiceMetrics) PostMessage(log logger.Logger) {
 			data := newMetric(name, "counter")
 			tmp := int64(value)
 			data.Delta = &tmp
+			// fmt.Printf("------------ %+v \n", value)
 			_, err := sm.Post(data, addr, log)
 
 			if err != nil {
@@ -134,7 +159,8 @@ func (sm *ServiceMetrics) PostMessage(log logger.Logger) {
 		}
 
 		time.Sleep(time.Duration(sm.cfg.ReportInterval) * time.Second)
-		fmt.Println("22222222222", pollCount)
-		pollCount = 0
+		sm.counter.NilValue()
+
+		// fmt.Printf("+++++++++++++ %+v \n", sm.counter)
 	}
 }

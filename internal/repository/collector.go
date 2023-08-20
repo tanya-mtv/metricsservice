@@ -36,6 +36,7 @@ func (m *MetricRepositoryCollector) SetValueCounter(metricName string, value Cou
 func (m *MetricRepositoryCollector) GetAllCounter() map[string]Counter {
 
 	return m.counterData
+
 }
 
 func (m *MetricRepositoryCollector) GetAllGauge() map[string]Gauge {

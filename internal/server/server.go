@@ -44,7 +44,7 @@ func (s *server) Run() error {
 
 	value := s.router.Group("/value")
 	{
-		s.router.POST("/value/", h.PostMetricsValueJSON(s.log))
+		value.POST("/", h.PostMetricsValueJSON(s.log))
 		value.GET("/counter/:metricName", h.GetMethodCounter())
 		value.GET("/gauge/:metricName", h.GetMethodGauge())
 	}

@@ -69,6 +69,8 @@ func (sm *ServiceMetrics) MetricsMonitor() {
 		sm.metricsRepository.SetValueGauge("Sys", repository.Gauge(rtm.Sys))
 		sm.metricsRepository.SetValueGauge("TotalAlloc", repository.Gauge(rtm.TotalAlloc))
 
+		fmt.Println("11111111111 ", pollCount)
+
 		sm.metricsRepository.SetValueCounter("pollCount", repository.Counter(pollCount))
 		sm.metricsRepository.SetValueGauge("RandomValue", repository.Gauge(float64(rand.Float64())))
 
@@ -110,7 +112,6 @@ func (sm *ServiceMetrics) PostMessage(log logger.Logger) {
 			tmp := float64(value)
 			data.Value = &tmp
 
-			// fmt.Printf("111111 %+v\n", data)
 			_, err := sm.Post(data, addr, log)
 
 			if err != nil {
@@ -120,6 +121,7 @@ func (sm *ServiceMetrics) PostMessage(log logger.Logger) {
 		}
 
 		for name, value := range sm.metricsRepository.GetAllCounter() {
+
 			data := newMetric(name, "counter")
 			tmp := int64(value)
 			data.Delta = &tmp
@@ -131,7 +133,8 @@ func (sm *ServiceMetrics) PostMessage(log logger.Logger) {
 
 		}
 
-		pollCount = 0
 		time.Sleep(time.Duration(sm.cfg.ReportInterval) * time.Second)
+		fmt.Println("22222222222", pollCount)
+		pollCount = 0
 	}
 }

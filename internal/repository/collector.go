@@ -1,6 +1,8 @@
 package repository
 
-import "sync"
+import (
+	"sync"
+)
 
 type MetricRepositoryCollector struct {
 	gaugeData    map[string]Gauge
@@ -32,6 +34,7 @@ func (m *MetricRepositoryCollector) SetValueCounter(metricName string, value Cou
 }
 
 func (m *MetricRepositoryCollector) GetAllCounter() map[string]Counter {
+
 	return m.counterData
 }
 

@@ -198,13 +198,8 @@ func (h *Handler) PostMetricsJSON(log logger.Logger) gin.HandlerFunc {
 func (h *Handler) GetAllMetrics(log logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		metrics, err := h.repository.GetAll()
+		metrics := h.repository.GetAll()
 
-		if err != nil {
-			newErrorResponse(c, http.StatusInternalServerError, err.Error())
-			log.Error("Error of getting all metrics from storage")
-			return
-		}
 		c.JSON(http.StatusOK, getAllMetricResponse{
 			Data: metrics,
 		})

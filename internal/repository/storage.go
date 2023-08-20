@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"errors"
 	"sync"
 
 	"github.com/tanya-mtv/metricsservice/internal/models"
@@ -38,11 +37,9 @@ func (m *MetricRepositoryStorage) UpdateGauge(n string, v float64) Gauge {
 	return m.gaugeData[n]
 }
 
-func (m *MetricRepositoryStorage) GetAll() ([]models.Metrics, error) {
+func (m *MetricRepositoryStorage) GetAll() []models.Metrics {
 	metricsSlice := make([]models.Metrics, 0, 29)
-	if len(m.counterData) == 0 && len(m.gaugeData) == 0 {
-		return metricsSlice, errors.New("Storage is emty")
-	}
+
 	for name, value := range m.counterData {
 		tmp := int64(value)
 		data := models.Metrics{
@@ -62,7 +59,7 @@ func (m *MetricRepositoryStorage) GetAll() ([]models.Metrics, error) {
 		}
 		metricsSlice = append(metricsSlice, data)
 	}
-	return metricsSlice, nil
+	return metricsSlice
 }
 
 func (m *MetricRepositoryStorage) GetCounter(metricName string) (Counter, bool) {

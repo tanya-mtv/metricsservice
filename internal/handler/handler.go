@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 
 	"net/http"
@@ -27,45 +26,6 @@ func NewHandler(repository *repository.MetricRepositoryStorage, cfg *config.Conf
 		repository: repository,
 		cfg:        cfg,
 	}
-}
-
-func (h *Handler) GetMetricMethod(log logger.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-		var metric models.Metrics
-
-		jsonData, _ := io.ReadAll(c.Request.Body)
-		if err := json.Unmarshal(jsonData, &metric); err != nil {
-			newErrorResponse(c, http.StatusBadRequest, err.Error())
-			log.Error(err)
-		}
-
-		switch metric.MType {
-		case "counter":
-			value, found := h.repository.GetCounter(metric.ID)
-			if !found {
-				newErrorResponse(c, http.StatusNotFound, "Metric not found")
-				return
-			}
-
-			tmp := int64(value)
-			metric.Delta = &tmp
-		case "gauge":
-			value, found := h.repository.GetGauge(metric.ID)
-			if !found {
-				newErrorResponse(c, http.StatusNotFound, "Metric not found")
-				return
-			}
-
-			tmp := float64(value)
-			metric.Value = &tmp
-		}
-
-		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-		c.JSON(http.StatusOK, metric)
-
-	}
-
 }
 
 func (h *Handler) GetMethodCounter() gin.HandlerFunc {
@@ -111,11 +71,12 @@ func (h *Handler) PostMetricsValueJSON(log logger.Logger) gin.HandlerFunc {
 		switch metric.MType {
 		case "counter":
 			cnt, found := h.repository.GetCounter(metric.ID)
-
 			if !found {
 				newErrorResponse(c, http.StatusNotFound, "Metric not found")
 				return
 			}
+
+			// cnt := int64(h.repository.UpdateCounter(metric.ID, metric.Delta))
 			tmp := int64(cnt)
 
 			metric := models.Metrics{
@@ -197,16 +158,17 @@ func (h *Handler) PostMetricsUpdateJSON(log logger.Logger) gin.HandlerFunc {
 		switch metric.MType {
 		case "counter":
 			if metric.Delta == nil {
-				log.Info("Can't find tag metric  Delta")
+				log.Info("Can't find  metric tag Delta")
 				c.JSON(http.StatusBadRequest, 0)
 				return
 			}
 			metricValue := *metric.Delta
-			fmt.Println("metricValue", &metricValue)
+
 			cnt := int64(h.repository.UpdateCounter(metric.ID, metricValue))
 
-			log.Info("Update counter data wuth value ", cnt)
+			log.Info("!!!Was counter  ", *metric.Delta)
 			metric.Delta = &cnt
+			log.Info("!!!Update counter data wuth value ", *metric.Delta)
 
 			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 			c.JSON(http.StatusOK, metric)

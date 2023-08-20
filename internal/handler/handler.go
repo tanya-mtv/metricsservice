@@ -108,7 +108,6 @@ func (h *Handler) PostMetricsValueJSON(log logger.Logger) gin.HandlerFunc {
 			log.Error(err)
 		}
 
-		fmt.Println("1111111111111111", metric)
 		switch metric.MType {
 		case "counter":
 			cnt, found := h.repository.GetCounter(metric.ID)

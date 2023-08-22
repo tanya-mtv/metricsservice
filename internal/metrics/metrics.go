@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -23,18 +24,18 @@ type counter struct {
 	sync.Mutex
 }
 
-func (c *counter) Inc() {
+func (c *counter) inc() {
 	c.Lock()
 	defer c.Unlock()
 
 	c.num += 1
 }
 
-func (c *counter) Value() int64 {
+func (c *counter) value() int64 {
 	return c.num
 }
 
-func (c *counter) NilValue() {
+func (c *counter) nilValue() {
 	c.Lock()
 	defer c.Unlock()
 
@@ -45,6 +46,7 @@ type ServiceMetrics struct {
 	cfg               *config.ConfigAgent
 	metricsRepository *repository.MetricRepositoryCollector
 	counter           *counter
+	httpClient        *http.Client
 }
 
 func NewServiceMetrics(cfg *config.ConfigAgent, metricsRepository *repository.MetricRepositoryCollector) *ServiceMetrics {
@@ -55,6 +57,7 @@ func NewServiceMetrics(cfg *config.ConfigAgent, metricsRepository *repository.Me
 		counter: &counter{
 			num: 0,
 		},
+		httpClient: &http.Client{},
 	}
 }
 
@@ -64,7 +67,7 @@ func (sm *ServiceMetrics) MetricsMonitor() {
 	interval := time.Duration(sm.cfg.PollInterval) * time.Second
 	for {
 		time.Sleep(interval)
-		sm.counter.Inc()
+		sm.counter.inc()
 
 		runtime.ReadMemStats(&rtm)
 		sm.metricsRepository.SetValueGauge("Alloc", repository.Gauge(rtm.Alloc))
@@ -95,7 +98,7 @@ func (sm *ServiceMetrics) MetricsMonitor() {
 		sm.metricsRepository.SetValueGauge("Sys", repository.Gauge(rtm.Sys))
 		sm.metricsRepository.SetValueGauge("TotalAlloc", repository.Gauge(rtm.TotalAlloc))
 
-		sm.metricsRepository.SetValueCounter("PollCount", repository.Counter(sm.counter.Value()))
+		sm.metricsRepository.SetValueCounter("PollCount", repository.Counter(sm.counter.value()))
 		sm.metricsRepository.SetValueGauge("RandomValue", repository.Gauge(float64(rand.Float64())))
 
 	}
@@ -108,7 +111,27 @@ func (sm *ServiceMetrics) Post(metric *models.Metrics, url string, log logger.Lo
 		log.Debug("Can't post message")
 		return "", err
 	}
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
+
+	gz, err := sm.Compression(log, data)
+	if err != nil {
+		log.Debug(err)
+		return "", err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewReader(gz))
+	if err != nil {
+		log.Error(err)
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Encoding", "gzip")
+	req.Header.Set("Accept-Encoding", "identity")
+	resp, err := sm.httpClient.Do(req)
+	if err != nil {
+		log.Error(err)
+	}
+	// resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
 
 	if err != nil {
 		log.Debug("Can't post message")
@@ -149,7 +172,7 @@ func (sm *ServiceMetrics) PostMessage(log logger.Logger) {
 			data := newMetric(name, "counter")
 			tmp := int64(value)
 			data.Delta = &tmp
-			// fmt.Printf("------------ %+v \n", value)
+
 			_, err := sm.Post(data, addr, log)
 
 			if err != nil {
@@ -159,8 +182,22 @@ func (sm *ServiceMetrics) PostMessage(log logger.Logger) {
 		}
 
 		time.Sleep(time.Duration(sm.cfg.ReportInterval) * time.Second)
-		sm.counter.NilValue()
-
-		// fmt.Printf("+++++++++++++ %+v \n", sm.counter)
+		sm.counter.nilValue()
 	}
+}
+
+func (sm *ServiceMetrics) Compression(log logger.Logger, b []byte) ([]byte, error) {
+	var bf bytes.Buffer
+	gz, err := gzip.NewWriterLevel(&bf, gzip.BestSpeed)
+	if err != nil {
+		log.Debug(err)
+		return nil, err
+	}
+	_, err = gz.Write(b)
+	if err != nil {
+		log.Debug(err)
+		return nil, err
+	}
+	gz.Close()
+	return bf.Bytes(), nil
 }

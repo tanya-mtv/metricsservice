@@ -35,6 +35,7 @@ func (s *server) Run() error {
 
 	h := handler.NewHandler(repos, s.cfg)
 
+	s.router.Use(h.GzipMiddleware(s.log))
 	s.router.Use(h.WithLogging(s.log))
 
 	s.router.GET("/", h.GetAllMetrics(s.log))

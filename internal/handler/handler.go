@@ -192,7 +192,7 @@ func (h *Handler) GetAllMetrics(log logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		metrics := h.repository.GetAll()
-
+		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		c.JSON(http.StatusOK, getAllMetricResponse{
 			Data: metrics,
 		})

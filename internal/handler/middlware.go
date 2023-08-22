@@ -61,7 +61,8 @@ func (h *Handler) GzipMiddleware(log logger.Logger) gin.HandlerFunc {
 			defer cw.Close()
 
 			c.Writer = cw
-			c.Writer.Header().Set("Content-Encoding", "gzip")
+			// c.Writer.Header().Set("Content-Encoding", "gzip")
+			// c.Writer.Header().Set("Accept-Encoding", "gzip")
 
 		}
 

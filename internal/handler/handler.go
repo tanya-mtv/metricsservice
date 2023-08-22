@@ -84,7 +84,7 @@ func (h *Handler) PostMetricsValueJSON(log logger.Logger) gin.HandlerFunc {
 				Delta: &tmp,
 			}
 
-			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+			// c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 			c.Writer.Header().Set("Content-Encoding", "gzip")
 			c.JSON(http.StatusOK, metric)
 		case "gauge":
@@ -103,7 +103,7 @@ func (h *Handler) PostMetricsValueJSON(log logger.Logger) gin.HandlerFunc {
 			}
 
 			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-			c.Writer.Header().Set("Content-Encoding", "gzip")
+			// c.Writer.Header().Set("Content-Encoding", "gzip")
 			c.JSON(http.StatusOK, metric)
 		default:
 			c.JSON(http.StatusBadRequest, 0)

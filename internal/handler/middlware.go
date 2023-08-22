@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -56,13 +55,12 @@ func (h *Handler) GzipMiddleware(log logger.Logger) gin.HandlerFunc {
 		supportsGzip := strings.Contains(acceptEncoding, "gzip")
 		contentType := c.GetHeader("Content-Type")
 		if supportsGzip && (strings.Contains(contentType, "application/json") || strings.Contains(contentType, "text/html")) {
-			fmt.Println("1111111111111111111111111111111")
 			cw := newCompressWriter(c.Writer)
+			cw.Header().Add("Content-Encoding", "gzip")
 			defer cw.Close()
 
 			c.Writer = cw
-			c.Writer.Header().Set("Content-Encoding", "gzip")
-			// c.Writer.Header().Set("Accept-Encoding", "gzip")
+			// c.Writer.Header().Set("Content-Encoding", "gzip")
 
 		}
 

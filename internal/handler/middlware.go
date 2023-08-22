@@ -56,10 +56,8 @@ func (h *Handler) GzipMiddleware(log logger.Logger) gin.HandlerFunc {
 		// проверяем, что клиент умеет получать от сервера сжатые данные в формате gzip
 		acceptEncoding := c.GetHeader("Accept-Encoding")
 		supportsGzip := strings.Contains(acceptEncoding, "gzip")
-		contentType := c.Writer.Header().Get("Content-Type")
+		contentType := c.GetHeader("Content-Type")
 		if supportsGzip && (strings.HasPrefix(contentType, "application/json") || strings.HasPrefix(contentType, "text/html")) {
-
-			// fmt.Printf("body %+v", c.Writer)
 			cw := newCompressWriter(c.Writer)
 			defer cw.Close()
 

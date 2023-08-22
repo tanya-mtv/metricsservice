@@ -165,9 +165,7 @@ func (h *Handler) PostMetricsUpdateJSON(log logger.Logger) gin.HandlerFunc {
 
 			cnt := int64(h.repository.UpdateCounter(metric.ID, metricValue))
 
-			log.Info("!!!Was counter  ", *metric.Delta)
 			metric.Delta = &cnt
-			log.Info("!!!Update counter data wuth value ", *metric.Delta)
 
 			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 			c.JSON(http.StatusOK, metric)

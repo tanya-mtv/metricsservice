@@ -76,7 +76,6 @@ func (h *Handler) PostMetricsValueJSON(log logger.Logger) gin.HandlerFunc {
 				return
 			}
 
-			// cnt := int64(h.repository.UpdateCounter(metric.ID, metric.Delta))
 			tmp := int64(cnt)
 
 			metric := models.Metrics{
@@ -86,6 +85,7 @@ func (h *Handler) PostMetricsValueJSON(log logger.Logger) gin.HandlerFunc {
 			}
 
 			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+			c.Writer.Header().Set("Content-Encoding", "gzip")
 			c.JSON(http.StatusOK, metric)
 		case "gauge":
 			gug, found := h.repository.GetGauge(metric.ID)
@@ -103,6 +103,7 @@ func (h *Handler) PostMetricsValueJSON(log logger.Logger) gin.HandlerFunc {
 			}
 
 			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+			c.Writer.Header().Set("Content-Encoding", "gzip")
 			c.JSON(http.StatusOK, metric)
 		default:
 			c.JSON(http.StatusBadRequest, 0)

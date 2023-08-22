@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -39,9 +38,6 @@ func (h *Handler) GzipMiddleware(log logger.Logger) gin.HandlerFunc {
 
 		// проверяем, что клиент отправил серверу сжатые данные в формате gzip
 		contentEncoding := c.GetHeader("Content-Encoding")
-
-		fmt.Println("1", c.GetHeader("Content-Encoding"))
-		fmt.Println("11", c.GetHeader("Accept-Encoding"))
 		sendsGzip := strings.Contains(contentEncoding, "gzip")
 		if sendsGzip {
 			// оборачиваем тело запроса в io.Reader с поддержкой декомпрессии

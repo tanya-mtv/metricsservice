@@ -177,7 +177,7 @@ func (h *Handler) PostMetricsUpdateJSON(log logger.Logger) gin.HandlerFunc {
 			}
 			metricValue := *metric.Value
 			gug := float64(h.repository.UpdateGauge(metric.ID, metricValue))
-			log.Info("Update gauge data wuth value ", gug)
+			log.Info("Update gauge data with value ", gug)
 			metric.Value = &gug
 
 			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")

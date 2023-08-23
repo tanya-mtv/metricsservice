@@ -50,6 +50,15 @@ func (s *server) Run() error {
 		value.GET("/gauge/:metricName", h.GetMethodGauge())
 	}
 
+	if s.cfg.FileName != "" {
+		if s.cfg.Restore {
+			loadLDataFromFile(repos, s.log, s.cfg.FileName)
+		}
+		if s.cfg.Interval != 0 {
+			go saveDataToFile(repos, s.log, s.cfg)
+		}
+	}
+
 	go func() {
 		s.log.Info("Connectlistening on port: %s", s.cfg.Port)
 		if err := s.router.Run(s.cfg.Port); err != nil {

@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"github.com/tanya-mtv/metricsservice/internal/config"
+	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
 
@@ -22,10 +24,19 @@ type metricRepositoryCollector interface {
 	GetAllGauge() map[string]Gauge
 }
 
+type metricRepositoryFiles interface {
+	LoadLDataFromFile(log logger.Logger, filePath string)
+	SaveDataToFile(log logger.Logger, cfg *config.ConfigServer)
+}
+
 type RepositoryStorage struct {
 	metricRepositoryStorage
 }
 
 type RepositoryCollector struct {
 	metricRepositoryCollector
+}
+
+type RepositoryFiles struct {
+	metricRepositoryFiles
 }

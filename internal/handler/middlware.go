@@ -41,6 +41,7 @@ func (h *Handler) GzipMiddleware(log logger.Logger) gin.HandlerFunc {
 		if sendsGzip {
 			// оборачиваем тело запроса в io.Reader с поддержкой декомпрессии
 			cr, err := newCompressReader(c.Request.Body)
+
 			if err != nil {
 				c.Writer.WriteHeader(http.StatusInternalServerError)
 				return

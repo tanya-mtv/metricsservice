@@ -15,7 +15,6 @@ type compressWriter struct {
 	w  gin.ResponseWriter
 }
 
-// func newCompressWriter(w http.ResponseWriter) *compressWriter {
 func newCompressWriter(w gin.ResponseWriter) *compressWriter {
 
 	return &compressWriter{

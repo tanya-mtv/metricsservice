@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
@@ -33,10 +34,21 @@ func (a *agent) Run() error {
 
 	a.metrics = metrics.NewServiceMetrics(a.cfg, repos)
 
-	go a.metrics.MetricsMonitor()
+	pollIntervalTicker := time.NewTicker(time.Duration(a.cfg.PollInterval) * time.Second)
+	defer pollIntervalTicker.Stop()
 
-	go a.metrics.PostMessage(a.log)
+	reportIntervalTicker := time.NewTicker(time.Duration(a.cfg.ReportInterval) * time.Second)
+	defer reportIntervalTicker.Stop()
 
-	<-ctx.Done()
-	return nil
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-pollIntervalTicker.C:
+			a.metrics.MetricsMonitor()
+		case <-reportIntervalTicker.C:
+			a.metrics.PostMessage(a.log)
+		}
+	}
+
 }

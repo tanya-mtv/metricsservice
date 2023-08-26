@@ -14,7 +14,7 @@ type Config struct {
 }
 
 // Application logger
-type appLogger struct {
+type AppLogger struct {
 	level       string
 	devMode     bool
 	encoding    string
@@ -22,11 +22,11 @@ type appLogger struct {
 	logger      *zap.Logger
 }
 
-func NewAppLogger(cfg *Config) *appLogger {
-	return &appLogger{level: cfg.LogLevel, devMode: cfg.DevMode, encoding: cfg.Type}
+func NewAppLogger(cfg *Config) *AppLogger {
+	return &AppLogger{level: cfg.LogLevel, devMode: cfg.DevMode, encoding: cfg.Type}
 }
 
-func (l *appLogger) InitLogger() {
+func (l *AppLogger) InitLogger() {
 	logLevel, _ := zap.ParseAtomicLevel(l.level)
 
 	logWriter := zapcore.AddSync(os.Stdout)
@@ -72,21 +72,21 @@ type Logger interface {
 	Error(args ...interface{})
 }
 
-func (l *appLogger) Fatal(args ...interface{}) {
+func (l *AppLogger) Fatal(args ...interface{}) {
 	l.sugarLogger.Fatal(args...)
 }
 
-func (l *appLogger) Info(args ...interface{}) {
+func (l *AppLogger) Info(args ...interface{}) {
 	l.sugarLogger.Info(args...)
 }
 
-func (l *appLogger) Infoln(args ...interface{}) {
+func (l *AppLogger) Infoln(args ...interface{}) {
 	l.sugarLogger.Infoln(args...)
 }
-func (l *appLogger) Debug(args ...interface{}) {
+func (l *AppLogger) Debug(args ...interface{}) {
 	l.sugarLogger.Debug(args...)
 }
 
-func (l *appLogger) Error(args ...interface{}) {
+func (l *AppLogger) Error(args ...interface{}) {
 	l.sugarLogger.Error(args...)
 }

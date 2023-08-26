@@ -33,7 +33,7 @@ func testRequest(t *testing.T, ts *gin.Engine, method,
 func TestRouter(t *testing.T) {
 	router := gin.Default()
 
-	var testTable = []struct {
+	var testTableValue = []struct {
 		url    string
 		want   string
 		status int
@@ -43,7 +43,7 @@ func TestRouter(t *testing.T) {
 		{"/value/counter1/testSetGet40", "404 page not found", http.StatusNotFound},
 		{"/value/gauge1/testSetGet40", "404 page not found", http.StatusNotFound},
 	}
-	for _, v := range testTable {
+	for _, v := range testTableValue {
 		resp, get := testRequest(t, router, "GET", v.url)
 
 		defer resp.Body.Close()
@@ -51,7 +51,7 @@ func TestRouter(t *testing.T) {
 		assert.Equal(t, v.want, get)
 	}
 
-	var testTable1 = []struct {
+	var testTableUpdate = []struct {
 		url    string
 		want   string
 		status int
@@ -59,10 +59,9 @@ func TestRouter(t *testing.T) {
 
 		// проверим на ошибочный запрос
 		{"/update/counter1/testSetGet40/1", "404 page not found", http.StatusNotFound},
-		// {"/update/counter/testSetGet40/1.36", "Metric not found", http.StatusBadRequest},
 		{"/update/gauge1/testSetGet40/235", "404 page not found", http.StatusNotFound},
 	}
-	for _, v := range testTable1 {
+	for _, v := range testTableUpdate {
 		resp, get := testRequest(t, router, "GET", v.url)
 
 		defer resp.Body.Close()

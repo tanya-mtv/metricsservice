@@ -50,12 +50,13 @@ func (s *server) Run() error {
 		value.GET("/gauge/:metricName", h.GetMethodGauge())
 	}
 
+	fs := repository.NewMetricMetricRepositoryFiles(repos, s.cfg)
 	if s.cfg.FileName != "" {
 		if s.cfg.Restore {
-			loadLDataFromFile(repos, s.log, s.cfg.FileName)
+			fs.LoadLDataFromFile(s.log)
 		}
 		if s.cfg.Interval != 0 {
-			go saveDataToFile(repos, s.log, s.cfg)
+			go fs.SaveDataToFile(s.log)
 		}
 	}
 

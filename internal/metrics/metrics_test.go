@@ -55,6 +55,7 @@ func TestServiceMetrics_Post(t *testing.T) {
 		Type:     constants.Type,
 	}
 	log := logger.NewAppLogger(cfglog)
+
 	for _, tt := range tests {
 		t.Run(tt.nameTest, func(t *testing.T) {
 

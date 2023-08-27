@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,8 +46,8 @@ func TestRouter(t *testing.T) {
 		resp, get := testRequest(t, router, "GET", v.url)
 
 		defer resp.Body.Close()
-		assert.Equal(t, v.status, resp.StatusCode)
-		assert.Equal(t, v.want, get)
+		require.Equal(t, v.status, resp.StatusCode)
+		require.Equal(t, v.want, get)
 	}
 
 	var testTableUpdate = []struct {
@@ -65,7 +64,7 @@ func TestRouter(t *testing.T) {
 		resp, get := testRequest(t, router, "GET", v.url)
 
 		defer resp.Body.Close()
-		assert.Equal(t, v.status, resp.StatusCode)
-		assert.Equal(t, v.want, get)
+		require.Equal(t, v.status, resp.StatusCode)
+		require.Equal(t, v.want, get)
 	}
 }

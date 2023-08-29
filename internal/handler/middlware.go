@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -51,38 +50,25 @@ func (h *Handler) GzipMiddleware() gin.HandlerFunc {
 			defer cr.Close()
 		}
 
+		c.Next()
+
 		// проверяем, что клиент умеет получать от сервера сжатые данные в формате gzip
 		acceptEncoding := c.GetHeader("Accept-Encoding")
 		supportsGzip := strings.Contains(acceptEncoding, "gzip")
 		contentType := c.GetHeader("Content-Type")
+		if supportsGzip && (c.Writer.Status() == 200) && (strings.Contains(contentType, "application/json") || strings.Contains(contentType, "text/html") || len(contentType) == 0) {
 
-		c.Next()
-		if supportsGzip && (strings.Contains(contentType, "application/json") || strings.Contains(contentType, "text/html") || len(contentType) == 0) {
-			fmt.Println("222222222222222")
 			h.cWriter.buf.Reset()
 			h.cWriter.zw.Reset(&h.cWriter.buf)
 
 			cw := h.cWriter
 			cw.w = c.Writer
+
 			cw.Header().Add("Content-Encoding", "gzip")
 
 			defer cw.Close()
 
 			c.Writer = cw
-
-			// cw := newCompressWriter(c.Writer)
-			// cw.Header().Add("Content-Encoding", "gzip")
-
-			// defer cw.Close()
-
-			// c.Writer = cw
-			// cw := newCompressWriter()
-			// cw.w = c.Writer
-			// cw.Header().Add("Content-Encoding", "gzip")
-
-			// defer cw.Close()
-
-			// c.Writer = cw
 
 		}
 

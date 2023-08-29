@@ -116,6 +116,7 @@ func (h *Handler) PostMetricsValueJSON() gin.HandlerFunc {
 
 func (h *Handler) PostMetrics() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		metricType := c.Param("metricType")
 		metricName := c.Param("metricName")
 		switch metricType {
@@ -143,6 +144,7 @@ func (h *Handler) PostMetrics() gin.HandlerFunc {
 			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 			c.JSON(http.StatusOK, gug)
 		default:
+			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 			c.JSON(http.StatusBadRequest, 0)
 		}
 	}

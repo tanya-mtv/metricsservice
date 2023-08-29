@@ -5,12 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tanya-mtv/metricsservice/internal/logger"
-
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) WithLogging(log logger.Logger) gin.HandlerFunc {
+func (h *Handler) WithLogging() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
@@ -21,7 +19,7 @@ func (h *Handler) WithLogging(log logger.Logger) gin.HandlerFunc {
 
 		duration := time.Since(start)
 
-		log.Infoln(
+		h.log.Infoln(
 			"uri:", req.RequestURI,
 			"method:", req.Method,
 			"duration:", duration,
@@ -33,7 +31,7 @@ func (h *Handler) WithLogging(log logger.Logger) gin.HandlerFunc {
 
 }
 
-func (h *Handler) GzipMiddleware(log logger.Logger) gin.HandlerFunc {
+func (h *Handler) GzipMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// проверяем, что клиент отправил серверу сжатые данные в формате gzip
 		contentEncoding := c.GetHeader("Content-Encoding")
@@ -51,23 +49,25 @@ func (h *Handler) GzipMiddleware(log logger.Logger) gin.HandlerFunc {
 			defer cr.Close()
 		}
 
+		c.Next()
 		// проверяем, что клиент умеет получать от сервера сжатые данные в формате gzip
 		acceptEncoding := c.GetHeader("Accept-Encoding")
 		supportsGzip := strings.Contains(acceptEncoding, "gzip")
 		contentType := c.GetHeader("Content-Type")
 
 		if supportsGzip && (strings.Contains(contentType, "application/json") || strings.Contains(contentType, "text/html") || len(contentType) == 0) {
-			// if supportsGzip {
-			cw := newCompressWriter(c.Writer)
+			h.cWriter.buf.Reset()
+			h.cWriter.zw.Reset(&h.cWriter.buf)
+
+			cw := h.cWriter
+			cw.ResponseWriter = c.Writer
 			cw.Header().Add("Content-Encoding", "gzip")
 
 			defer cw.Close()
 
-			c.Writer = cw
+			c.Writer = cw.ResponseWriter
 
 		}
-
-		c.Next()
 
 	}
 }

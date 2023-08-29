@@ -30,38 +30,48 @@ func (s *server) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	repos := repository.NewMetricRepositoryStorage()
+	repos := repository.NewMetricStorage()
 	s.router = gin.New()
 
-	h := handler.NewHandler(repos, s.cfg)
+	h := handler.NewHandler(repos, s.cfg, s.log)
 
-	s.router.Use(h.GzipMiddleware(s.log))
-	s.router.Use(h.WithLogging(s.log))
+	s.router.Use(h.GzipMiddleware())
+	s.router.Use(h.WithLogging())
 
-	s.router.GET("/", h.GetAllMetrics(s.log))
+	s.router.GET("/", h.GetAllMetrics())
 
-	s.router.POST("/update", h.PostMetricsUpdateJSON(s.log))
+	s.router.POST("/update", h.PostMetricsUpdateJSON())
 	s.router.POST("/update/:metricType/:metricName/:metricValue", h.PostMetrics())
 
 	value := s.router.Group("/value")
 	{
-		value.POST("/", h.PostMetricsValueJSON(s.log))
+		value.POST("/", h.PostMetricsValueJSON())
 		value.GET("/counter/:metricName", h.GetMethodCounter())
 		value.GET("/gauge/:metricName", h.GetMethodGauge())
 	}
 
-	fs := repository.NewMetricMetricRepositoryFiles(repos, s.cfg)
+	fs := repository.NewMetricMetricRepositoryFiles(repos, s.cfg.FileName, s.cfg.Interval)
 	if s.cfg.FileName != "" {
 		if s.cfg.Restore {
-			fs.LoadLDataFromFile(s.log)
+			fs.LoadLDataFromFile()
 		}
 		if s.cfg.Interval != 0 {
-			go fs.SaveDataToFile(s.log)
+			go fs.SaveDataToFile(s.log, ctx)
 		}
 	}
 
+	// fs := fileoperations.NewFileStorage(repos, s.cfg)
+	// if s.cfg.FileName != "" {
+	// 	if s.cfg.Restore {
+	// 		fs.LoadLDataFromFile()
+	// 	}
+	// 	if s.cfg.Interval != 0 {
+	// 		go fs.SaveDataToFile(s.log, ctx)
+	// 	}
+	// }
+
 	go func() {
-		s.log.Info("Connectlistening on port: %s", s.cfg.Port)
+		s.log.Info("Connect listening on port: %s", s.cfg.Port)
 		if err := s.router.Run(s.cfg.Port); err != nil {
 
 			s.log.Fatal("Can't ListenAndServe on port", s.cfg.Port)

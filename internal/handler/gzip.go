@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bufio"
+	"bytes"
 	"compress/gzip"
 	"io"
 	"net"
@@ -12,14 +13,14 @@ import (
 
 type compressWriter struct {
 	zw *gzip.Writer
-	w  gin.ResponseWriter
+	gin.ResponseWriter
+	buf bytes.Buffer
 }
 
-func newCompressWriter(w gin.ResponseWriter) *compressWriter {
-
+func newCompressWriter() *compressWriter {
+	var bf bytes.Buffer
 	return &compressWriter{
-		w:  w,
-		zw: gzip.NewWriter(w),
+		zw: gzip.NewWriter(&bf),
 	}
 }
 
@@ -32,48 +33,48 @@ func (c *compressWriter) Close() error {
 }
 
 func (c *compressWriter) CloseNotify() <-chan bool {
-	return c.w.CloseNotify()
+	return c.ResponseWriter.CloseNotify()
 }
 
 func (c *compressWriter) Flush() {
-	c.w.Flush()
+	c.ResponseWriter.Flush()
 
 }
 
 func (c *compressWriter) Header() http.Header {
-	return c.w.Header()
+	return c.ResponseWriter.Header()
 }
 
 func (c *compressWriter) Size() int {
-	return c.w.Size()
+	return c.ResponseWriter.Size()
 }
 
 func (c *compressWriter) Status() int {
-	return c.w.Status()
+	return c.ResponseWriter.Status()
 }
 
 func (c *compressWriter) WriteHeader(i int) {
-	c.w.WriteHeader(i)
+	c.ResponseWriter.WriteHeader(i)
 }
 
 func (c *compressWriter) Written() bool {
-	return c.w.Written()
+	return c.ResponseWriter.Written()
 }
 
 func (c *compressWriter) WriteHeaderNow() {
-	c.w.WriteHeaderNow()
+	c.ResponseWriter.WriteHeaderNow()
 }
 
 func (c *compressWriter) WriteString(s string) (n int, err error) {
-	return c.w.WriteString(s)
+	return c.ResponseWriter.WriteString(s)
 }
 
 func (c *compressWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	return c.w.(http.Hijacker).Hijack()
+	return c.ResponseWriter.(http.Hijacker).Hijack()
 }
 
 func (c *compressWriter) Pusher() (pusher http.Pusher) {
-	if pusher, ok := c.w.(http.Pusher); ok {
+	if pusher, ok := c.ResponseWriter.(http.Pusher); ok {
 		return pusher
 	}
 	return nil

@@ -1,18 +1,17 @@
 package metrics
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/tanya-mtv/metricsservice/internal/models"
-
+	"github.com/stretchr/testify/require"
+	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/constants"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/tanya-mtv/metricsservice/internal/config"
+	"github.com/tanya-mtv/metricsservice/internal/models"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
@@ -61,10 +60,54 @@ func TestServiceMetrics_Post(t *testing.T) {
 
 			_, err := sm.Post(tt.body, addr, log)
 
-			assert.NoError(t, err, "error making HTTP request")
+			require.NoError(t, err, "error making HTTP request")
 
 			if tt.expectedBody != "" {
-				assert.NoError(t, err, "error making HTTP request")
+				require.NoError(t, err, "error making HTTP request")
+			}
+		})
+	}
+}
+
+func TestServiceMetrics_Compression(t *testing.T) {
+	type args struct {
+		log logger.Logger
+		b   []byte
+	}
+
+	cfglog := &logger.Config{
+		LogLevel: constants.LogLevel,
+		DevMode:  constants.DevMode,
+		Type:     constants.Type,
+	}
+	log := logger.NewAppLogger(cfglog)
+
+	metricRepo := &repository.MetricRepositoryCollector{}
+	cfg := &config.ConfigAgent{}
+	sm := NewServiceMetrics(cfg, metricRepo)
+
+	metric := newMetric("Alloc", "gauge")
+	tmp := float64(1798344)
+	metric.Value = &tmp
+	data, _ := json.Marshal(&metric)
+
+	tests := []struct {
+		name    string
+		sm      *ServiceMetrics
+		args    args
+		wantErr bool
+	}{
+		{
+			name:    "Test comprassion",
+			sm:      sm,
+			args:    args{log, data},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.sm.Compression(tt.args.log, tt.args.b); (err != nil) != tt.wantErr {
+				t.Errorf("ServiceMetrics.Compression() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

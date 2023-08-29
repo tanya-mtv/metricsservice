@@ -6,22 +6,22 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
 
-type MetricRepositoryStorage struct {
+type MetricStorage struct {
 	gaugeData    map[string]Gauge
 	counterData  map[string]Counter
 	countersLock sync.Mutex
 	gaugesLock   sync.Mutex
 }
 
-func NewMetricRepositoryStorage() *MetricRepositoryStorage {
+func NewMetricStorage() *MetricStorage {
 
-	return &MetricRepositoryStorage{
+	return &MetricStorage{
 		gaugeData:   make(map[string]Gauge),
 		counterData: make(map[string]Counter),
 	}
 }
 
-func (m *MetricRepositoryStorage) UpdateCounter(n string, v int64) Counter {
+func (m *MetricStorage) UpdateCounter(n string, v int64) Counter {
 	m.countersLock.Lock()
 	defer m.countersLock.Unlock()
 
@@ -29,7 +29,7 @@ func (m *MetricRepositoryStorage) UpdateCounter(n string, v int64) Counter {
 	return m.counterData[n]
 }
 
-func (m *MetricRepositoryStorage) UpdateGauge(n string, v float64) Gauge {
+func (m *MetricStorage) UpdateGauge(n string, v float64) Gauge {
 	m.gaugesLock.Lock()
 	defer m.gaugesLock.Unlock()
 
@@ -37,7 +37,7 @@ func (m *MetricRepositoryStorage) UpdateGauge(n string, v float64) Gauge {
 	return m.gaugeData[n]
 }
 
-func (m *MetricRepositoryStorage) GetAll() []models.Metrics {
+func (m *MetricStorage) GetAll() []models.Metrics {
 	metricsSlice := make([]models.Metrics, 0, 29)
 
 	for name, value := range m.counterData {
@@ -62,7 +62,7 @@ func (m *MetricRepositoryStorage) GetAll() []models.Metrics {
 	return metricsSlice
 }
 
-func (m *MetricRepositoryStorage) GetCounter(metricName string) (Counter, bool) {
+func (m *MetricStorage) GetCounter(metricName string) (Counter, bool) {
 	m.gaugesLock.Lock()
 	defer m.gaugesLock.Unlock()
 
@@ -70,7 +70,7 @@ func (m *MetricRepositoryStorage) GetCounter(metricName string) (Counter, bool) 
 	return res, found
 }
 
-func (m *MetricRepositoryStorage) GetGauge(metricName string) (Gauge, bool) {
+func (m *MetricStorage) GetGauge(metricName string) (Gauge, bool) {
 	m.gaugesLock.Lock()
 	defer m.gaugesLock.Unlock()
 

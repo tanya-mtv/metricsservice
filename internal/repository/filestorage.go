@@ -1,31 +1,33 @@
 package repository
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"path"
 	"time"
 
-	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
 
 type MetricRepositoryFiles struct {
-	repository *MetricRepositoryStorage
-	cfg        *config.ConfigServer
+	repository *MetricStorage
+	fileName   string
+	interval   int
 }
 
-func NewMetricMetricRepositoryFiles(repository *MetricRepositoryStorage, cfg *config.ConfigServer) *MetricRepositoryFiles {
+func NewMetricMetricRepositoryFiles(repository *MetricStorage, fileName string, interval int) *MetricRepositoryFiles {
 
 	return &MetricRepositoryFiles{
 		repository: repository,
-		cfg:        cfg,
+		fileName:   fileName,
+		interval:   interval,
 	}
 }
-func (m *MetricRepositoryFiles) LoadLDataFromFile(log logger.Logger) {
-	file, err := os.ReadFile(m.cfg.FileName)
+func (m *MetricRepositoryFiles) LoadLDataFromFile() {
+	file, err := os.ReadFile(m.fileName)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -46,8 +48,8 @@ func (m *MetricRepositoryFiles) LoadLDataFromFile(log logger.Logger) {
 	}
 }
 
-func (m *MetricRepositoryFiles) SaveDataToFile(log logger.Logger) {
-	dir, _ := path.Split(m.cfg.FileName)
+func (m *MetricRepositoryFiles) SaveDataToFile(log logger.Logger, ctx context.Context) {
+	dir, _ := path.Split(m.fileName)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err := os.MkdirAll(dir, 0666)
@@ -55,11 +57,17 @@ func (m *MetricRepositoryFiles) SaveDataToFile(log logger.Logger) {
 			log.Error(err)
 		}
 	}
-	pollTicker := time.NewTicker(time.Duration(m.cfg.Interval) * time.Second)
+	pollTicker := time.NewTicker(time.Duration(m.interval) * time.Second)
 	defer pollTicker.Stop()
-	for range pollTicker.C {
-		m.save()
+	for {
+		select {
+		case <-pollTicker.C:
+			m.save()
+		case <-ctx.Done():
+			return
+		}
 	}
+
 }
 
 func (m *MetricRepositoryFiles) save() error {
@@ -71,5 +79,5 @@ func (m *MetricRepositoryFiles) save() error {
 		return err
 	}
 
-	return os.WriteFile(m.cfg.FileName, data, 0666)
+	return os.WriteFile(m.fileName, data, 0666)
 }

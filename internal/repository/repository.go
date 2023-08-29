@@ -25,7 +25,7 @@ type metricRepositoryCollector interface {
 }
 
 type metricRepositoryFiles interface {
-	LoadLDataFromFile(log logger.Logger, filePath string)
+	LoadLDataFromFile(filePath string)
 	SaveDataToFile(log logger.Logger, cfg *config.ConfigServer)
 }
 

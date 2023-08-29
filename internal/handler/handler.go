@@ -16,15 +16,18 @@ import (
 )
 
 type Handler struct {
-	repository *repository.MetricRepositoryStorage
+	repository *repository.MetricStorage
 	cfg        *config.ConfigServer
+	cWriter    *compressWriter
+	log        logger.Logger
 }
 
-func NewHandler(repository *repository.MetricRepositoryStorage, cfg *config.ConfigServer) *Handler {
-
+func NewHandler(repository *repository.MetricStorage, cfg *config.ConfigServer, log logger.Logger) *Handler {
 	return &Handler{
 		repository: repository,
 		cfg:        cfg,
+		cWriter:    newCompressWriter(),
+		log:        log,
 	}
 }
 
@@ -60,12 +63,12 @@ func (h *Handler) GetMethodGauge() gin.HandlerFunc {
 
 }
 
-func (h *Handler) PostMetricsValueJSON(log logger.Logger) gin.HandlerFunc {
+func (h *Handler) PostMetricsValueJSON() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var metric models.Metrics
 		jsonData, _ := io.ReadAll(c.Request.Body)
 		if err := json.Unmarshal(jsonData, &metric); err != nil {
-			log.Error(err)
+			h.log.Error(err)
 		}
 
 		switch metric.MType {
@@ -145,19 +148,19 @@ func (h *Handler) PostMetrics() gin.HandlerFunc {
 	}
 }
 
-func (h *Handler) PostMetricsUpdateJSON(log logger.Logger) gin.HandlerFunc {
+func (h *Handler) PostMetricsUpdateJSON() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var metric models.Metrics
 
 		jsonData, _ := io.ReadAll(c.Request.Body)
 		if err := json.Unmarshal(jsonData, &metric); err != nil {
-			log.Error(err)
+			h.log.Error(err)
 		}
 
 		switch metric.MType {
 		case "counter":
 			if metric.Delta == nil {
-				log.Info("Can't find  metric tag Delta")
+				h.log.Info("Can't find  metric tag Delta")
 				c.JSON(http.StatusBadRequest, 0)
 				return
 			}
@@ -171,13 +174,13 @@ func (h *Handler) PostMetricsUpdateJSON(log logger.Logger) gin.HandlerFunc {
 			c.JSON(http.StatusOK, metric)
 		case "gauge":
 			if metric.Value == nil {
-				log.Info("Can't find tag metric  Value")
+				h.log.Info("Can't find tag metric  Value")
 				c.JSON(http.StatusBadRequest, 0)
 				return
 			}
 			metricValue := *metric.Value
 			gug := float64(h.repository.UpdateGauge(metric.ID, metricValue))
-			log.Info("Update gauge data with value ", gug)
+			h.log.Info("Update gauge data with value ", gug)
 			metric.Value = &gug
 
 			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -188,7 +191,7 @@ func (h *Handler) PostMetricsUpdateJSON(log logger.Logger) gin.HandlerFunc {
 	}
 }
 
-func (h *Handler) GetAllMetrics(log logger.Logger) gin.HandlerFunc {
+func (h *Handler) GetAllMetrics() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		metrics := h.repository.GetAll()

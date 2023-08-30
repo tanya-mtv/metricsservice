@@ -12,21 +12,24 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
 
-type MetricRepositoryFiles struct {
+type FilesService struct {
 	repository *MetricStorage
 	fileName   string
 	interval   int
+	log        logger.Logger
 }
 
-func NewMetricMetricRepositoryFiles(repository *MetricStorage, fileName string, interval int) *MetricRepositoryFiles {
+func NewMetricMetricFiles(repository *MetricStorage, fileName string, interval int, log logger.Logger) *FilesService {
 
-	return &MetricRepositoryFiles{
+	return &FilesService{
 		repository: repository,
 		fileName:   fileName,
 		interval:   interval,
+		log:        log,
 	}
 }
-func (m *MetricRepositoryFiles) LoadLDataFromFile() {
+
+func (m *FilesService) LoadLDataFromFile() {
 	file, err := os.ReadFile(m.fileName)
 	if err != nil {
 		fmt.Println(err)
@@ -48,13 +51,13 @@ func (m *MetricRepositoryFiles) LoadLDataFromFile() {
 	}
 }
 
-func (m *MetricRepositoryFiles) SaveDataToFile(log logger.Logger, ctx context.Context) {
+func (m *FilesService) SaveDataToFile(ctx context.Context) {
 	dir, _ := path.Split(m.fileName)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err := os.MkdirAll(dir, 0666)
 		if err != nil {
-			log.Error(err)
+			m.log.Error(err)
 		}
 	}
 	pollTicker := time.NewTicker(time.Duration(m.interval) * time.Second)
@@ -70,7 +73,7 @@ func (m *MetricRepositoryFiles) SaveDataToFile(log logger.Logger, ctx context.Co
 
 }
 
-func (m *MetricRepositoryFiles) save() error {
+func (m *FilesService) save() error {
 
 	metrics := m.repository.GetAll()
 

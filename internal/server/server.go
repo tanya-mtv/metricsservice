@@ -14,9 +14,10 @@ import (
 )
 
 type server struct {
-	cfg    *config.ConfigServer
-	router *gin.Engine
-	log    logger.Logger
+	cfg     *config.ConfigServer
+	router  *gin.Engine
+	log     logger.Logger
+	storage *repository.Storage
 }
 
 func NewServer(cfg *config.ConfigServer, log logger.Logger) *server {
@@ -32,8 +33,9 @@ func (s *server) Run() error {
 
 	repos := repository.NewMetricStorage()
 	s.router = gin.New()
+	s.storage = repository.NewStorage(repos, s.cfg, s.log)
 
-	h := handler.NewHandler(repos, s.cfg, s.log)
+	h := handler.NewHandler(s.storage, s.cfg, s.log)
 
 	s.router.Use(h.GzipMiddleware())
 	s.router.Use(h.WithLogging())
@@ -50,25 +52,14 @@ func (s *server) Run() error {
 		value.GET("/gauge/:metricName", h.GetMethodGauge())
 	}
 
-	fs := repository.NewMetricMetricRepositoryFiles(repos, s.cfg.FileName, s.cfg.Interval)
 	if s.cfg.FileName != "" {
 		if s.cfg.Restore {
-			fs.LoadLDataFromFile()
+			go s.storage.LoadLDataFromFile()
 		}
 		if s.cfg.Interval != 0 {
-			go fs.SaveDataToFile(s.log, ctx)
+			go s.storage.SaveDataToFile(ctx)
 		}
 	}
-
-	// fs := fileoperations.NewFileStorage(repos, s.cfg)
-	// if s.cfg.FileName != "" {
-	// 	if s.cfg.Restore {
-	// 		fs.LoadLDataFromFile()
-	// 	}
-	// 	if s.cfg.Interval != 0 {
-	// 		go fs.SaveDataToFile(s.log, ctx)
-	// 	}
-	// }
 
 	go func() {
 		s.log.Info("Connect listening on port: %s", s.cfg.Port)

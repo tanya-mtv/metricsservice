@@ -12,13 +12,18 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/constants"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
-	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
 func TestServiceMetrics_Post(t *testing.T) {
-	repos := &repository.MetricRepositoryCollector{}
 
-	sm := NewServiceMetrics(&config.ConfigAgent{}, repos)
+	cfglog := &logger.Config{
+		LogLevel: constants.LogLevel,
+		DevMode:  constants.DevMode,
+		Type:     constants.Type,
+	}
+	log := logger.NewAppLogger(cfglog)
+
+	sm := NewServiceMetrics(&config.ConfigAgent{}, log)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 	}))
@@ -48,17 +53,10 @@ func TestServiceMetrics_Post(t *testing.T) {
 		{"Post method counter", metric2, ""},
 	}
 
-	cfglog := &logger.Config{
-		LogLevel: constants.LogLevel,
-		DevMode:  constants.DevMode,
-		Type:     constants.Type,
-	}
-	log := logger.NewAppLogger(cfglog)
-
 	for _, tt := range tests {
 		t.Run(tt.nameTest, func(t *testing.T) {
 
-			_, err := sm.Post(tt.body, addr, log)
+			_, err := sm.Post(tt.body, addr)
 
 			require.NoError(t, err, "error making HTTP request")
 
@@ -82,9 +80,8 @@ func TestServiceMetrics_Compression(t *testing.T) {
 	}
 	log := logger.NewAppLogger(cfglog)
 
-	metricRepo := &repository.MetricRepositoryCollector{}
 	cfg := &config.ConfigAgent{}
-	sm := NewServiceMetrics(cfg, metricRepo)
+	sm := NewServiceMetrics(cfg, log)
 
 	metric := newMetric("Alloc", "gauge")
 	tmp := float64(1798344)
@@ -106,7 +103,7 @@ func TestServiceMetrics_Compression(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.sm.Compression(tt.args.log, tt.args.b); (err != nil) != tt.wantErr {
+			if err := tt.sm.Compression(tt.args.b); (err != nil) != tt.wantErr {
 				t.Errorf("ServiceMetrics.Compression() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

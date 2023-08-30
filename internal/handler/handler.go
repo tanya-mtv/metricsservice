@@ -16,17 +16,16 @@ import (
 )
 
 type Handler struct {
-	repository *repository.MetricStorage
-	cfg        *config.ConfigServer
-
-	log logger.Logger
+	storage *repository.Storage
+	cfg     *config.ConfigServer
+	log     logger.Logger
 }
 
-func NewHandler(repository *repository.MetricStorage, cfg *config.ConfigServer, log logger.Logger) *Handler {
+func NewHandler(storage *repository.Storage, cfg *config.ConfigServer, log logger.Logger) *Handler {
 	return &Handler{
-		repository: repository,
-		cfg:        cfg,
-		log:        log,
+		storage: storage,
+		cfg:     cfg,
+		log:     log,
 	}
 }
 
@@ -34,7 +33,7 @@ func (h *Handler) GetMethodCounter() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		metricName := c.Param("metricName")
 
-		cnt, found := h.repository.GetCounter(metricName)
+		cnt, found := h.storage.GetCounter(metricName)
 
 		if !found {
 			newErrorResponse(c, http.StatusNotFound, "Metric not found")
@@ -50,7 +49,7 @@ func (h *Handler) GetMethodGauge() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		metricName := c.Param("metricName")
 
-		gug, found := h.repository.GetGauge(metricName)
+		gug, found := h.storage.GetGauge(metricName)
 
 		if !found {
 			newErrorResponse(c, http.StatusNotFound, "Metric not found")
@@ -72,7 +71,7 @@ func (h *Handler) PostMetricsValueJSON() gin.HandlerFunc {
 
 		switch metric.MType {
 		case "counter":
-			cnt, found := h.repository.GetCounter(metric.ID)
+			cnt, found := h.storage.GetCounter(metric.ID)
 			if !found {
 				newErrorResponse(c, http.StatusNotFound, "Metric not found")
 				return
@@ -89,7 +88,7 @@ func (h *Handler) PostMetricsValueJSON() gin.HandlerFunc {
 			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 			c.JSON(http.StatusOK, metric)
 		case "gauge":
-			gug, found := h.repository.GetGauge(metric.ID)
+			gug, found := h.storage.GetGauge(metric.ID)
 
 			if !found {
 				newErrorResponse(c, http.StatusNotFound, "Metric not found")
@@ -127,7 +126,7 @@ func (h *Handler) PostMetrics() gin.HandlerFunc {
 				return
 			}
 
-			cnt := h.repository.UpdateCounter(metricName, int64(metricValue))
+			cnt := h.storage.UpdateCounter(metricName, int64(metricValue))
 
 			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 			c.JSON(http.StatusOK, cnt)
@@ -138,7 +137,7 @@ func (h *Handler) PostMetrics() gin.HandlerFunc {
 				newErrorResponse(c, http.StatusBadRequest, "invalid metricValue param")
 				return
 			}
-			gug := h.repository.UpdateGauge(metricName, metricValue)
+			gug := h.storage.UpdateGauge(metricName, metricValue)
 
 			c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 			c.JSON(http.StatusOK, gug)
@@ -167,7 +166,7 @@ func (h *Handler) PostMetricsUpdateJSON() gin.HandlerFunc {
 			}
 			metricValue := *metric.Delta
 
-			cnt := int64(h.repository.UpdateCounter(metric.ID, metricValue))
+			cnt := int64(h.storage.UpdateCounter(metric.ID, metricValue))
 
 			metric.Delta = &cnt
 
@@ -180,7 +179,7 @@ func (h *Handler) PostMetricsUpdateJSON() gin.HandlerFunc {
 				return
 			}
 			metricValue := *metric.Value
-			gug := float64(h.repository.UpdateGauge(metric.ID, metricValue))
+			gug := float64(h.storage.UpdateGauge(metric.ID, metricValue))
 			h.log.Info("Update gauge data with value ", gug)
 			metric.Value = &gug
 
@@ -195,7 +194,7 @@ func (h *Handler) PostMetricsUpdateJSON() gin.HandlerFunc {
 func (h *Handler) GetAllMetrics() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		metrics := h.repository.GetAll()
+		metrics := h.storage.GetAll()
 		c.Writer.Header().Set("Content-Type", "text/html")
 		c.JSON(http.StatusOK, getAllMetricResponse{
 			Data: metrics,

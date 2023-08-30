@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 
 	"net/http"
@@ -194,9 +193,6 @@ func (h *Handler) PostMetricsUpdateJSON() gin.HandlerFunc {
 
 func (h *Handler) GetAllMetrics() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		fmt.Printf("22222222222222222222 %+v \n", h.storage.GetAll())
-
 		metrics := h.storage.GetAll()
 		c.Writer.Header().Set("Content-Type", "text/html")
 		c.JSON(http.StatusOK, getAllMetricResponse{

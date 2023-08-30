@@ -48,10 +48,9 @@ func TestHandler_GzipMiddleware(t *testing.T) {
 	cfg := &config.ConfigServer{Port: "8080"}
 	log := logger.NewAppLogger(cfglog)
 
-	repo := repository.NewMetricStorage()
-	h := Handler{
-		storage: repository.NewStorage(repo, cfg, log),
-	}
+	repo := repository.NewStorage()
+
+	h := NewHandler(repo, cfg, log)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

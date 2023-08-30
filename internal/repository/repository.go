@@ -22,36 +22,18 @@ type metricCollector interface {
 	GetAllGauge() map[string]Gauge
 }
 
-type metricFiles interface {
-	UpdateCounter(n string, v int64) Counter
-	UpdateGauge(n string, v float64) Gauge
-	GetAll() []models.Metrics
-}
-
 type Storage struct {
 	metricStorage
 }
 
-type File struct {
-	metricFiles
-}
 type Collector struct {
 	metricCollector
 }
 
-// func NewStorage(repository *MetricStorage, cfg *config.ConfigServer, log logger.Logger) *Storage {
 func NewStorage() *Storage {
 	return &Storage{
 		metricStorage: NewMetricStorage(),
 	}
-
-}
-
-func NewFileStorage() *File {
-	return &File{
-		metricFiles: NewMetricFiles(),
-	}
-
 }
 
 func NewCollector() *Collector {

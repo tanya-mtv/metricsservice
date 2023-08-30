@@ -60,7 +60,7 @@ func NewServiceMetrics(collector *repository.Collector, cfg *config.ConfigAgent,
 	gz, _ := gzip.NewWriterLevel(&bf, gzip.BestSpeed)
 	return &ServiceMetrics{
 		cfg:       cfg,
-		collector: repository.NewCollector(),
+		collector: collector,
 		counter: &counter{
 			num: 0,
 		},

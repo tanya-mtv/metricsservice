@@ -12,6 +12,7 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/constants"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
+	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
 func TestServiceMetrics_Post(t *testing.T) {
@@ -23,7 +24,8 @@ func TestServiceMetrics_Post(t *testing.T) {
 	}
 	log := logger.NewAppLogger(cfglog)
 
-	sm := NewServiceMetrics(&config.ConfigAgent{}, log)
+	repo := repository.NewCollector()
+	sm := NewServiceMetrics(repo, &config.ConfigAgent{}, log)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 	}))
@@ -78,10 +80,11 @@ func TestServiceMetrics_Compression(t *testing.T) {
 		DevMode:  constants.DevMode,
 		Type:     constants.Type,
 	}
-	log := logger.NewAppLogger(cfglog)
 
+	log := logger.NewAppLogger(cfglog)
 	cfg := &config.ConfigAgent{}
-	sm := NewServiceMetrics(cfg, log)
+	repo := repository.NewCollector()
+	sm := NewServiceMetrics(repo, cfg, log)
 
 	metric := newMetric("Alloc", "gauge")
 	tmp := float64(1798344)

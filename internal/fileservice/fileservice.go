@@ -1,4 +1,4 @@
-package repository
+package fileservice
 
 import (
 	"context"
@@ -8,28 +8,31 @@ import (
 	"path"
 	"time"
 
+	"github.com/tanya-mtv/metricsservice/internal/repository"
+
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
 
 type FilesService struct {
-	repository *MetricStorage
-	fileName   string
-	interval   int
-	log        logger.Logger
+	storage  *repository.Storage
+	fileName string
+	interval int
+	log      logger.Logger
 }
 
-func NewMetricMetricFiles(repository *MetricStorage, fileName string, interval int, log logger.Logger) *FilesService {
+func NewMetricFiles(storage *repository.Storage, fileName string, interval int, log logger.Logger) *FilesService {
 
 	return &FilesService{
-		repository: repository,
-		fileName:   fileName,
-		interval:   interval,
-		log:        log,
+		storage:  storage,
+		fileName: fileName,
+		interval: interval,
+		log:      log,
 	}
 }
 
 func (m *FilesService) LoadLDataFromFile() {
+
 	file, err := os.ReadFile(m.fileName)
 	if err != nil {
 		fmt.Println(err)
@@ -42,11 +45,12 @@ func (m *FilesService) LoadLDataFromFile() {
 	}
 
 	for _, metric := range data {
+
 		switch metric.MType {
 		case "counter":
-			m.repository.UpdateCounter(metric.ID, *metric.Delta)
+			m.storage.UpdateCounter(metric.ID, *metric.Delta)
 		case "gauge":
-			m.repository.UpdateGauge(metric.ID, *metric.Value)
+			m.storage.UpdateGauge(metric.ID, *metric.Value)
 		}
 	}
 }
@@ -75,7 +79,7 @@ func (m *FilesService) SaveDataToFile(ctx context.Context) {
 
 func (m *FilesService) save() error {
 
-	metrics := m.repository.GetAll()
+	metrics := m.storage.GetAll()
 
 	data, err := json.MarshalIndent(metrics, "", "   ")
 	if err != nil {

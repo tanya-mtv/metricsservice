@@ -1,10 +1,6 @@
 package repository
 
 import (
-	"context"
-
-	"github.com/tanya-mtv/metricsservice/internal/config"
-	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
 
@@ -27,23 +23,33 @@ type metricCollector interface {
 }
 
 type metricFiles interface {
-	LoadLDataFromFile()
-	SaveDataToFile(ctx context.Context)
+	UpdateCounter(n string, v int64) Counter
+	UpdateGauge(n string, v float64) Gauge
+	GetAll() []models.Metrics
 }
 
 type Storage struct {
 	metricStorage
-	metricFiles
 }
 
+type File struct {
+	metricFiles
+}
 type Collector struct {
 	metricCollector
 }
 
-func NewStorage(repository *MetricStorage, cfg *config.ConfigServer, log logger.Logger) *Storage {
+// func NewStorage(repository *MetricStorage, cfg *config.ConfigServer, log logger.Logger) *Storage {
+func NewStorage() *Storage {
 	return &Storage{
-		metricFiles:   NewMetricMetricFiles(repository, cfg.FileName, cfg.Interval, log),
 		metricStorage: NewMetricStorage(),
+	}
+
+}
+
+func NewFileStorage() *File {
+	return &File{
+		metricFiles: NewMetricFiles(),
 	}
 
 }

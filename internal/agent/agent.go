@@ -10,6 +10,7 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/metrics"
+	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
 type agent struct {
@@ -28,8 +29,8 @@ func NewAgent(cfg *config.ConfigAgent, log logger.Logger) *agent {
 func (a *agent) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
-
-	a.metrics = metrics.NewServiceMetrics(a.cfg, a.log)
+	collector := repository.NewCollector()
+	a.metrics = metrics.NewServiceMetrics(collector, a.cfg, a.log)
 
 	pollIntervalTicker := time.NewTicker(time.Duration(a.cfg.PollInterval) * time.Second)
 	defer pollIntervalTicker.Stop()

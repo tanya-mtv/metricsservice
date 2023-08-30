@@ -55,7 +55,7 @@ type ServiceMetrics struct {
 	log        logger.Logger
 }
 
-func NewServiceMetrics(cfg *config.ConfigAgent, log logger.Logger) *ServiceMetrics {
+func NewServiceMetrics(collector *repository.Collector, cfg *config.ConfigAgent, log logger.Logger) *ServiceMetrics {
 	var bf bytes.Buffer
 	gz, _ := gzip.NewWriterLevel(&bf, gzip.BestSpeed)
 	return &ServiceMetrics{

@@ -6,18 +6,20 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/tanya-mtv/metricsservice/internal/repository"
+
+	"github.com/tanya-mtv/metricsservice/internal/fileservice"
+
 	"github.com/gin-gonic/gin"
 	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/handler"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
-	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
 type server struct {
-	cfg     *config.ConfigServer
-	router  *gin.Engine
-	log     logger.Logger
-	storage *repository.Storage
+	cfg    *config.ConfigServer
+	router *gin.Engine
+	log    logger.Logger
 }
 
 func NewServer(cfg *config.ConfigServer, log logger.Logger) *server {
@@ -31,11 +33,11 @@ func (s *server) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	repos := repository.NewMetricStorage()
 	s.router = gin.New()
-	s.storage = repository.NewStorage(repos, s.cfg, s.log)
 
-	h := handler.NewHandler(s.storage, s.cfg, s.log)
+	repo := repository.NewStorage()
+
+	h := handler.NewHandler(repo, s.cfg, s.log)
 
 	s.router.Use(h.GzipMiddleware())
 	s.router.Use(h.WithLogging())
@@ -52,12 +54,13 @@ func (s *server) Run() error {
 		value.GET("/gauge/:metricName", h.GetMethodGauge())
 	}
 
+	fs := fileservice.NewMetricFiles(repo, s.cfg.FileName, s.cfg.Interval, s.log)
 	if s.cfg.FileName != "" {
 		if s.cfg.Restore {
-			go s.storage.LoadLDataFromFile()
+			go fs.LoadLDataFromFile()
 		}
 		if s.cfg.Interval != 0 {
-			go s.storage.SaveDataToFile(ctx)
+			go fs.SaveDataToFile(ctx)
 		}
 	}
 

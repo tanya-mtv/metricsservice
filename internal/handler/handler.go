@@ -18,15 +18,14 @@ import (
 type Handler struct {
 	repository *repository.MetricStorage
 	cfg        *config.ConfigServer
-	cWriter    *compressWriter
-	log        logger.Logger
+
+	log logger.Logger
 }
 
 func NewHandler(repository *repository.MetricStorage, cfg *config.ConfigServer, log logger.Logger) *Handler {
 	return &Handler{
 		repository: repository,
 		cfg:        cfg,
-		cWriter:    newCompressWriter(),
 		log:        log,
 	}
 }

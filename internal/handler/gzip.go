@@ -17,10 +17,12 @@ type compressWriter struct {
 	buf bytes.Buffer
 }
 
-func newCompressWriter() *compressWriter {
+func newCompressWriter(w gin.ResponseWriter) *compressWriter {
 	var bf bytes.Buffer
 	return &compressWriter{
-		zw:  gzip.NewWriter(&bf),
+		w:  w,
+		zw: gzip.NewWriter(w),
+
 		buf: bf,
 	}
 }

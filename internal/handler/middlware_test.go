@@ -48,7 +48,7 @@ func TestHandler_GzipMiddleware(t *testing.T) {
 	cfg := &config.ConfigServer{Port: "8080"}
 	log := logger.NewAppLogger(cfglog)
 
-	repo := repository.NewStorage()
+	repo := repository.NewMetricStorage()
 
 	h := NewHandler(repo, cfg, log)
 
@@ -56,7 +56,7 @@ func TestHandler_GzipMiddleware(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, r := gin.CreateTestContext(w)
-			r.POST("/", h.GetAllMetrics())
+			r.POST("/", h.GetAllMetrics)
 			c.Request = httptest.NewRequest(http.MethodPost, "/", nil)
 
 			r.ServeHTTP(w, c.Request)

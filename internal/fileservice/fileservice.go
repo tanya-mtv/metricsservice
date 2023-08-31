@@ -8,22 +8,25 @@ import (
 	"path"
 	"time"
 
-	"github.com/tanya-mtv/metricsservice/internal/repository"
-
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
 
-type FilesService struct {
-	storage  *repository.Storage
+type DataOper interface {
+	LoadLDataFromFile()
+	SaveDataToFile(ctx context.Context)
+}
+
+type FilesStorage struct {
+	storage  fileStorage
 	fileName string
 	interval int
 	log      logger.Logger
 }
 
-func NewMetricFiles(storage *repository.Storage, fileName string, interval int, log logger.Logger) *FilesService {
+func NewFilesStorage(storage fileStorage, fileName string, interval int, log logger.Logger) *FilesStorage {
 
-	return &FilesService{
+	return &FilesStorage{
 		storage:  storage,
 		fileName: fileName,
 		interval: interval,
@@ -31,7 +34,7 @@ func NewMetricFiles(storage *repository.Storage, fileName string, interval int, 
 	}
 }
 
-func (m *FilesService) LoadLDataFromFile() {
+func (m *FilesStorage) LoadLDataFromFile() {
 
 	file, err := os.ReadFile(m.fileName)
 	if err != nil {
@@ -55,7 +58,7 @@ func (m *FilesService) LoadLDataFromFile() {
 	}
 }
 
-func (m *FilesService) SaveDataToFile(ctx context.Context) {
+func (m *FilesStorage) SaveDataToFile(ctx context.Context) {
 	dir, _ := path.Split(m.fileName)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
@@ -77,7 +80,7 @@ func (m *FilesService) SaveDataToFile(ctx context.Context) {
 
 }
 
-func (m *FilesService) save() error {
+func (m *FilesStorage) save() error {
 
 	metrics := m.storage.GetAll()
 

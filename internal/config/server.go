@@ -13,6 +13,7 @@ type ConfigServer struct {
 	Interval int    `env:"STORE_INTERVAL"`
 	FileName string `env:"FILE_STORAGE_PATH"`
 	Restore  bool   `env:"RESTORE"`
+	DSN      string `env:"DATABASE_DSN"`
 	Logger   *logger.Config
 }
 
@@ -22,6 +23,7 @@ func InitServer() (*ConfigServer, error) {
 	var flagInterval int
 	var flagFileName string
 	var flagRestore bool
+	var flagDSN string
 
 	cfg := &ConfigServer{}
 	env.Parse(cfg)
@@ -30,6 +32,8 @@ func InitServer() (*ConfigServer, error) {
 	flag.IntVar(&flagInterval, "i", 300, "Saved interval")
 	flag.StringVar(&flagFileName, "f", "/tmp/metrics-db.json", "storage file")
 	flag.BoolVar(&flagRestore, "r", true, "need of sviving")
+
+	flag.StringVar(&flagDSN, "d", "sslmode=disable host=localhost port=5433 dbname = yametrics user=dbuser password=password123", "connection to database")
 	flag.Parse()
 
 	if cfg.Port == "" {
@@ -44,6 +48,10 @@ func InitServer() (*ConfigServer, error) {
 
 	if !cfg.Restore {
 		cfg.Restore = flagRestore
+	}
+
+	if cfg.DSN == "" {
+		cfg.DSN = flagDSN
 	}
 
 	cfglog := &logger.Config{

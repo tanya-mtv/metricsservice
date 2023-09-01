@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 
 	"github.com/gin-gonic/gin"
@@ -16,16 +17,37 @@ import (
 
 type Handler struct {
 	storage metricStorage
+	db      metricDB
 	cfg     *config.ConfigServer
 	log     logger.Logger
 }
 
-func NewHandler(storage metricStorage, cfg *config.ConfigServer, log logger.Logger) *Handler {
+func NewHandler(storage metricStorage, db *sqlx.DB, cfg *config.ConfigServer, log logger.Logger) *Handler {
 	return &Handler{
 		storage: storage,
+		db:      db,
 		cfg:     cfg,
 		log:     log,
 	}
+}
+
+func (h *Handler) Ping(c *gin.Context) {
+	c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	var ptr *sqlx.DB
+
+	if ptr == h.db {
+		newErrorResponse(c, http.StatusInternalServerError, "Can't connect to database")
+		return
+	}
+
+	err := h.db.Ping()
+
+	if err != nil {
+
+		newErrorResponse(c, http.StatusInternalServerError, "Can't connect to database")
+		return
+	}
+	c.JSON(http.StatusOK, "Success connection to database")
 }
 
 func (h *Handler) GetMethodCounter(c *gin.Context) {

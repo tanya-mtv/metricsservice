@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/tanya-mtv/metricsservice/internal/config"
 
 	"github.com/tanya-mtv/metricsservice/internal/constants"
@@ -48,9 +49,9 @@ func TestHandler_GzipMiddleware(t *testing.T) {
 	cfg := &config.ConfigServer{Port: "8080"}
 	log := logger.NewAppLogger(cfglog)
 
-	repo := repository.NewMetricStorage()
-
-	h := NewHandler(repo, cfg, log)
+	stor := repository.NewMetricStorage()
+	db, _ := sqlx.Open("postgres", "dsn")
+	h := NewHandler(stor, db, cfg, log)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

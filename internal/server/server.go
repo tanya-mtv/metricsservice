@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	_ "github.com/lib/pq"
 	"github.com/tanya-mtv/metricsservice/internal/fileservice"
 
 	"github.com/tanya-mtv/metricsservice/internal/repository"
@@ -34,8 +35,16 @@ func (s *server) Run() error {
 	defer cancel()
 
 	stor := repository.NewMetricStorage()
+	db, err := repository.NewPostgresDB(s.cfg.DSN)
 
-	s.router = NewRouter(stor, s.cfg, s.log)
+	if err != nil {
+		s.log.Info("Failed to initialaze db: %s", err.Error())
+	} else {
+		s.log.Info("Success connection to db")
+		defer db.Close()
+	}
+
+	s.router = NewRouter(stor, db, s.cfg, s.log)
 
 	s.cron = openStorage(ctx, stor, s.cfg.FileName, s.cfg.Interval, s.cfg.Restore, s.log)
 

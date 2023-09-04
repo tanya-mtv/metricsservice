@@ -12,3 +12,7 @@ type metricStorage interface {
 	GetCounter(metricName string) (repository.Counter, bool)
 	GetGauge(metricName string) (repository.Gauge, bool)
 }
+
+// type HandlerStorage struct {
+// 	metricStorage
+// }

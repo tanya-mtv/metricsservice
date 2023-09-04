@@ -9,7 +9,10 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
-
+type DataOper interface {
+	LoadLDataFromFile()
+	SaveDataToFile(ctx context.Context)
+}
 
 func openStorage(ctx context.Context, stor *repository.MetricStorage, filename string, interval int, restore bool, log logger.Logger) *fileservice.FilesStorage {
 

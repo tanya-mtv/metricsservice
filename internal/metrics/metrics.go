@@ -47,7 +47,7 @@ func (c *counter) nulValue() {
 
 type ServiceMetrics struct {
 	cfg        *config.ConfigAgent
-	collector  metricCollector
+	collector  *repository.Collector
 	counter    *counter
 	httpClient *http.Client
 	buf        bytes.Buffer
@@ -55,7 +55,7 @@ type ServiceMetrics struct {
 	log        logger.Logger
 }
 
-func NewServiceMetrics(collector *repository.MetricRepositoryCollector, cfg *config.ConfigAgent, log logger.Logger) *ServiceMetrics {
+func NewServiceMetrics(collector *repository.Collector, cfg *config.ConfigAgent, log logger.Logger) *ServiceMetrics {
 	var bf bytes.Buffer
 	gz, _ := gzip.NewWriterLevel(&bf, gzip.BestSpeed)
 	return &ServiceMetrics{

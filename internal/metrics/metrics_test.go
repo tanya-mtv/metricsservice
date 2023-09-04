@@ -24,7 +24,7 @@ func TestServiceMetrics_Post(t *testing.T) {
 	}
 	log := logger.NewAppLogger(cfglog)
 
-	repo := repository.NewMetricRepositoryCollector()
+	repo := repository.NewCollector()
 	sm := NewServiceMetrics(repo, &config.ConfigAgent{}, log)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -83,7 +83,7 @@ func TestServiceMetrics_Compression(t *testing.T) {
 
 	log := logger.NewAppLogger(cfglog)
 	cfg := &config.ConfigAgent{}
-	repo := repository.NewMetricRepositoryCollector()
+	repo := repository.NewCollector()
 	sm := NewServiceMetrics(repo, cfg, log)
 
 	metric := newMetric("Alloc", "gauge")

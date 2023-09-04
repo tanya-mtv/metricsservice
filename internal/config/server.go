@@ -33,7 +33,8 @@ func InitServer() (*ConfigServer, error) {
 	flag.StringVar(&flagFileName, "f", "/tmp/metrics-db.json", "storage file")
 	flag.BoolVar(&flagRestore, "r", true, "need of sviving")
 
-	flag.StringVar(&flagDSN, "d", "sslmode=disable host=localhost port=5433 dbname = yametrics user=dbuser password=password123", "connection to database")
+	flag.StringVar(&flagDSN, "d", "sslmode=disable host=localhost port=5432 dbname = yametrics user=dbuser password=password123", "connection to database")
+
 	flag.Parse()
 
 	if cfg.Port == "" {

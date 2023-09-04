@@ -7,8 +7,8 @@ import (
 	"syscall"
 
 	_ "github.com/lib/pq"
-	"github.com/tanya-mtv/metricsservice/internal/fileservice"
 
+	"github.com/tanya-mtv/metricsservice/internal/models"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
 
 	"github.com/gin-gonic/gin"
@@ -16,11 +16,19 @@ import (
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 )
 
+type metricStorage interface {
+	UpdateCounter(n string, v int64) repository.Counter
+	UpdateGauge(n string, v float64) repository.Gauge
+	GetAll() []models.Metrics
+	GetCounter(metricName string) (repository.Counter, bool)
+	GetGauge(metricName string) (repository.Gauge, bool)
+}
+
 type server struct {
 	cfg    *config.ConfigServer
 	router *gin.Engine
 	log    logger.Logger
-	cron   fileservice.DataOper
+	stor   metricStorage
 }
 
 func NewServer(cfg *config.ConfigServer, log logger.Logger) *server {
@@ -34,7 +42,6 @@ func (s *server) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	stor := repository.NewMetricStorage()
 	db, err := repository.NewPostgresDB(s.cfg.DSN)
 
 	if err != nil {
@@ -43,10 +50,9 @@ func (s *server) Run() error {
 		s.log.Info("Success connection to db")
 		defer db.Close()
 	}
+	s.openStorage(ctx, db)
 
-	s.router = NewRouter(stor, db, s.cfg, s.log)
-
-	s.cron = openStorage(ctx, stor, s.cfg.FileName, s.cfg.Interval, s.cfg.Restore, s.log)
+	s.router = s.NewRouter(db)
 
 	go func() {
 		s.log.Info("Connect listening on port: %s", s.cfg.Port)

@@ -3,22 +3,20 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
-	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/handler"
-	"github.com/tanya-mtv/metricsservice/internal/logger"
-	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
-func NewRouter(stor *repository.MetricStorage, db *sqlx.DB, cfg *config.ConfigServer, log logger.Logger) *gin.Engine {
+func (s *server) NewRouter(db *sqlx.DB) *gin.Engine {
+	hp := handler.NewHandlerPing(db)
+	h := handler.NewHandler(s.stor, s.cfg, s.log)
 
-	h := handler.NewHandler(stor, db, cfg, log)
 	router := gin.New()
 
 	router.Use(h.GzipMiddleware)
 	router.Use(h.WithLogging)
 
 	router.GET("/", h.GetAllMetrics)
-	router.GET("/ping", h.Ping)
+	router.GET("/ping", hp.Ping)
 
 	router.POST("/update", h.PostMetricsUpdateJSON)
 	router.POST("/update/:metricType/:metricName/:metricValue", h.PostMetrics)

@@ -61,3 +61,19 @@ func (m *FileStorage) GetAll() []models.Metrics {
 	}
 	return metricsSlice
 }
+
+func (m *FileStorage) GetCounter(metricName string) (Counter, bool) {
+	m.gaugesLock.Lock()
+	defer m.gaugesLock.Unlock()
+
+	res, found := m.counterData[metricName]
+	return res, found
+}
+
+func (m *FileStorage) GetGauge(metricName string) (Gauge, bool) {
+	m.gaugesLock.Lock()
+	defer m.gaugesLock.Unlock()
+
+	res, found := m.gaugeData[metricName]
+	return res, found
+}

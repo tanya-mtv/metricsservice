@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
@@ -170,7 +168,7 @@ func (m *DBStorage) GetGauge(metricName string) (Gauge, bool) {
 
 func (m *DBStorage) UpdateMetrics(metrics []models.Metrics) error {
 	cntMap := m.GetAllCounter()
-	fmt.Println("", cntMap)
+
 	tx, err := m.db.Begin()
 	if err != nil {
 		return err

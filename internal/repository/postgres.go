@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"strings"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
@@ -139,7 +141,8 @@ func (m *DBStorage) GetAllCounter() map[string]int64 {
 	}
 
 	for _, value := range metricsSlice {
-		elementMap[value.ID] = *value.Delta
+		name := strings.TrimSpace(value.ID)
+		elementMap[name] = *value.Delta
 	}
 	return elementMap
 }
@@ -156,7 +159,7 @@ func (m *DBStorage) GetCounter(metricName string) (Counter, bool) {
 }
 
 func (m *DBStorage) GetGauge(metricName string) (Gauge, bool) {
-	var gug int64
+	var gug float64
 	query := "SELECT value from metrics WHERE ID = $1"
 	err := m.db.Get(&gug, query, metricName)
 	if err != nil {

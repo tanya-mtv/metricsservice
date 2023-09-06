@@ -30,7 +30,6 @@ func (h *Handler) WithLogging(c *gin.Context) {
 }
 
 func (h *Handler) GzipMiddleware(c *gin.Context) {
-
 	// проверяем, что клиент отправил серверу сжатые данные в формате gzip
 	contentEncoding := c.GetHeader("Content-Encoding")
 	sendsGzip := strings.Contains(contentEncoding, "gzip")

@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
@@ -103,17 +105,15 @@ func (m *DBStorage) UpdateGauge(n string, v float64) Gauge {
 		}
 	}
 
-	newValue := value
-
 	query = "UPDATE metrics set value = $1 WHERE id = $2"
-	_, err := m.db.Exec(query, newValue, n)
+	_, err := m.db.Exec(query, v, n)
 
 	if err != nil {
 		m.log.Error("Can't update data from DB with metric ", n)
 		return Gauge(v)
 	}
 
-	return Gauge(newValue)
+	return Gauge(v)
 }
 
 func (m *DBStorage) GetAll() []models.Metrics {
@@ -125,7 +125,25 @@ func (m *DBStorage) GetAll() []models.Metrics {
 		m.log.Error("Can't get all metric ")
 		return metricsSlice
 	}
+
 	return metricsSlice
+}
+
+func (m *DBStorage) GetAllCounter() map[string]int64 {
+	metricsSlice := make([]models.Metrics, 0, 29)
+	elementMap := make(map[string]int64, 0)
+	query := "SELECT id, mtype, delta, value from metrics where mtype='counter'"
+
+	err := m.db.Select(&metricsSlice, query)
+	if err != nil {
+		m.log.Error("Can't get all metric ")
+		return elementMap
+	}
+
+	for _, value := range metricsSlice {
+		elementMap[value.ID] = *value.Delta
+	}
+	return elementMap
 }
 
 func (m *DBStorage) GetCounter(metricName string) (Counter, bool) {
@@ -148,4 +166,40 @@ func (m *DBStorage) GetGauge(metricName string) (Gauge, bool) {
 		return 0, false
 	}
 	return Gauge(gug), true
+}
+
+func (m *DBStorage) UpdateMetrics(metrics []models.Metrics) error {
+	cntMap := m.GetAllCounter()
+	fmt.Println("", cntMap)
+	tx, err := m.db.Begin()
+	if err != nil {
+		return err
+	}
+	// можно вызвать Rollback в defer,
+	// если Commit будет раньше, то откат проигнорируется
+	defer tx.Rollback()
+
+	stmt, err := tx.Prepare(
+		"INSERT INTO metrics (id, mtype, delta, value) values ($1, $2, $3, $4)" +
+			"ON CONFLICT (id) DO UPDATE SET delta = $5,  value=$6")
+
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for _, v := range metrics {
+		switch v.MType {
+		case "counter":
+			newDelta := cntMap[v.ID] + *v.Delta
+			_, err = stmt.Exec(v.ID, v.MType, newDelta, 0, newDelta, 0)
+		case "gauge":
+			_, err = stmt.Exec(v.ID, v.MType, 0, *v.Value, 0, *v.Value)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	tx.Commit()
+	return nil
 }

@@ -7,8 +7,8 @@ import (
 type MetricRepositoryCollector struct {
 	gaugeData    map[string]Gauge
 	counterData  map[string]Counter
-	countersLock sync.Mutex
-	gaugesLock   sync.Mutex
+	countersLock sync.RWMutex
+	gaugesLock   sync.RWMutex
 }
 
 func NewMetricRepositoryCollector() *MetricRepositoryCollector {
@@ -34,11 +34,26 @@ func (m *MetricRepositoryCollector) SetValueCounter(metricName string, value Cou
 }
 
 func (m *MetricRepositoryCollector) GetAllCounter() map[string]Counter {
+	m.countersLock.RLock()
+	data := m.counterData
+	m.countersLock.RUnlock()
 
-	return m.counterData
+	for name, value := range data {
+		data[name] = value
+	}
+
+	return data
 
 }
 
 func (m *MetricRepositoryCollector) GetAllGauge() map[string]Gauge {
+	m.gaugesLock.RLock()
+	data := m.gaugeData
+	m.gaugesLock.RUnlock()
+
+	for name, value := range data {
+		data[name] = value
+	}
+
 	return m.gaugeData
 }

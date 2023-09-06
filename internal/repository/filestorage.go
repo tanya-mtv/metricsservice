@@ -77,3 +77,24 @@ func (m *FileStorage) GetGauge(metricName string) (Gauge, bool) {
 	res, found := m.gaugeData[metricName]
 	return res, found
 }
+
+func (m *FileStorage) UpdateMetrics(metrics []models.Metrics) error {
+	for _, value := range metrics {
+		switch value.MType {
+		case "counter":
+			m.countersLock.Lock()
+			defer m.countersLock.Unlock()
+			tmp := *value.Delta
+
+			m.counterData[value.ID] += Counter(tmp)
+		case "gauge":
+			m.gaugesLock.Lock()
+			defer m.gaugesLock.Unlock()
+
+			tmp := *value.Value
+
+			m.gaugeData[value.ID] = Gauge(tmp)
+		}
+	}
+	return nil
+}

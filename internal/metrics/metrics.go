@@ -108,12 +108,11 @@ func (sm *ServiceMetrics) MetricsMonitor() {
 
 	sm.collector.SetValueCounter("PollCount", repository.Counter(sm.counter.value()))
 	sm.collector.SetValueGauge("RandomValue", repository.Gauge(float64(rand.Float64())))
-
 }
 
-func (sm *ServiceMetrics) Post(metric *models.Metrics, url string) (string, error) {
+func (sm *ServiceMetrics) Post(metrics []*models.Metrics, url string) (string, error) {
 
-	data, err := json.Marshal(&metric)
+	data, err := json.Marshal(&metrics)
 	if err != nil {
 		sm.log.Debug("Can't post message")
 		return "", err
@@ -156,18 +155,15 @@ func newMetric(metricName, metricsType string) *models.Metrics {
 }
 
 func (sm *ServiceMetrics) PostMessage() {
-	addr := fmt.Sprintf("http://%s/update", sm.cfg.Port)
+	listMetrics := make([]*models.Metrics, 29)
+	addr := fmt.Sprintf("http://%s/updates", sm.cfg.Port)
 
 	for name, value := range sm.collector.GetAllGauge() {
 		data := newMetric(name, "gauge")
 		tmp := float64(value)
 		data.Value = &tmp
 
-		_, err := sm.Post(data, addr)
-
-		if err != nil {
-			sm.log.Info(err)
-		}
+		listMetrics = append(listMetrics, data)
 
 	}
 
@@ -177,12 +173,15 @@ func (sm *ServiceMetrics) PostMessage() {
 		tmp := int64(value)
 		data.Delta = &tmp
 
-		_, err := sm.Post(data, addr)
+		listMetrics = append(listMetrics, data)
 
+	}
+
+	if len(listMetrics) > 0 {
+		_, err := sm.Post(listMetrics, addr)
 		if err != nil {
 			sm.log.Info(err)
 		}
-
 	}
 
 	sm.counter.nulValue()

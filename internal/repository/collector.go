@@ -7,8 +7,8 @@ import (
 type MetricRepositoryCollector struct {
 	gaugeData    map[string]Gauge
 	counterData  map[string]Counter
-	countersLock sync.RWMutex
-	gaugesLock   sync.RWMutex
+	countersLock sync.Mutex
+	gaugesLock   sync.Mutex
 }
 
 func NewMetricRepositoryCollector() *MetricRepositoryCollector {

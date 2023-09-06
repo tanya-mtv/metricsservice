@@ -110,7 +110,7 @@ func (sm *ServiceMetrics) MetricsMonitor() {
 	sm.collector.SetValueGauge("RandomValue", repository.Gauge(float64(rand.Float64())))
 }
 
-func (sm *ServiceMetrics) Post(metrics []*models.Metrics, url string) (string, error) {
+func (sm *ServiceMetrics) PostJSON(metrics []*models.Metrics, url string) (string, error) {
 
 	data, err := json.Marshal(&metrics)
 	if err != nil {
@@ -154,7 +154,7 @@ func newMetric(metricName, metricsType string) *models.Metrics {
 	}
 }
 
-func (sm *ServiceMetrics) PostMessage() {
+func (sm *ServiceMetrics) PostMessageJSON() {
 	listMetrics := make([]*models.Metrics, 29)
 	addr := fmt.Sprintf("http://%s/updates", sm.cfg.Port)
 
@@ -178,7 +178,7 @@ func (sm *ServiceMetrics) PostMessage() {
 	}
 
 	if len(listMetrics) > 0 {
-		_, err := sm.Post(listMetrics, addr)
+		_, err := sm.PostJSON(listMetrics, addr)
 		if err != nil {
 			sm.log.Info(err)
 		}
@@ -200,4 +200,74 @@ func (sm *ServiceMetrics) Compression(b []byte) error {
 	sm.gzr.Close()
 
 	return nil
+}
+
+func (sm *ServiceMetrics) Post(metric *models.Metrics, url string) (string, error) {
+
+	data, err := json.Marshal(&metric)
+	if err != nil {
+		sm.log.Debug("Can't post message")
+		return "", err
+	}
+
+	err = sm.Compression(data)
+
+	if err != nil {
+		sm.log.Info(err)
+		return "", err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
+	if err != nil {
+		sm.log.Error(err)
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Encoding", "gzip")
+	req.Header.Set("Accept-Encoding", "identity")
+	resp, err := sm.httpClient.Do(req)
+
+	if err != nil {
+		sm.log.Debug("Can't post message")
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	return string(body), err
+}
+
+func (sm *ServiceMetrics) PostMessage() {
+	addr := fmt.Sprintf("http://%s/update", sm.cfg.Port)
+
+	for name, value := range sm.collector.GetAllGauge() {
+		data := newMetric(name, "gauge")
+		tmp := float64(value)
+		data.Value = &tmp
+
+		_, err := sm.Post(data, addr)
+
+		if err != nil {
+			sm.log.Info(err)
+		}
+
+	}
+
+	for name, value := range sm.collector.GetAllCounter() {
+
+		data := newMetric(name, "counter")
+		tmp := int64(value)
+		data.Delta = &tmp
+
+		_, err := sm.Post(data, addr)
+
+		if err != nil {
+			sm.log.Info(err)
+		}
+
+	}
+
+	sm.counter.nulValue()
+
 }

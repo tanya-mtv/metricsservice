@@ -58,7 +58,7 @@ func TestServiceMetrics_Post(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.nameTest, func(t *testing.T) {
 
-			_, err := sm.Post(tt.body, addr)
+			_, err := sm.PostJSON(tt.body, addr)
 
 			require.NoError(t, err, "error making HTTP request")
 

@@ -94,11 +94,19 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, 0)
 			return
 		}
-		metricValue := *metric.Delta
+		cnt, found := h.storage.GetCounter(metric.ID)
+		if !found {
+			newErrorResponse(c, http.StatusNotFound, "Metric not found")
+			return
+		}
 
-		cnt := int64(h.storage.UpdateCounter(metric.ID, metricValue))
+		tmp := int64(cnt)
 
-		metric.Delta = &cnt
+		metric := models.Metrics{
+			ID:    metric.ID,
+			MType: "counter",
+			Delta: &tmp,
+		}
 
 		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		c.JSON(http.StatusOK, metric)
@@ -108,10 +116,19 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, 0)
 			return
 		}
-		metricValue := *metric.Value
-		gug := float64(h.storage.UpdateGauge(metric.ID, metricValue))
-		h.log.Info("Update gauge data with value ", gug)
-		metric.Value = &gug
+		gug, found := h.storage.GetGauge(metric.ID)
+
+		if !found {
+			newErrorResponse(c, http.StatusNotFound, "Metric not found")
+			return
+		}
+		tmp := float64(gug)
+
+		metric := models.Metrics{
+			ID:    metric.ID,
+			MType: "gauge",
+			Value: &tmp,
+		}
 
 		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		c.JSON(http.StatusOK, metric)

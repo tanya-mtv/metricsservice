@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 
 	"net/http"
@@ -62,8 +63,9 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 	metrics := make([]models.Metrics, 0)
 
 	jsonData, _ := io.ReadAll(c.Request.Body)
-
+	fmt.Println("11111111111111111111111111111", jsonData)
 	if err := json.Unmarshal(jsonData, &metrics); err != nil {
+		fmt.Println("2222222222222222222222222222", err)
 		h.log.Error(err)
 	}
 

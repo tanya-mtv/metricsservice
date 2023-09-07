@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"io"
+	"strings"
 
 	"net/http"
 	"strconv"
@@ -89,12 +90,15 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 	switch metric.MType {
 	case "counter":
 		cnt, found := h.storage.GetCounter(metric.ID)
+
 		if !found {
 			newErrorResponse(c, http.StatusNotFound, "Metric not found")
 			return
 		}
 
-		tmp := int64(cnt)
+		tmp := int64(cnt) + *metric.Delta
+
+		h.storage.UpdateCounter(strings.TrimSpace(metric.ID), *metric.Delta)
 
 		metric := models.Metrics{
 			ID:    metric.ID,

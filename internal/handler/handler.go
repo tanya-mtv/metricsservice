@@ -81,6 +81,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 
 	var metric models.Metrics
+
 	jsonData, _ := io.ReadAll(c.Request.Body)
 	if err := json.Unmarshal(jsonData, &metric); err != nil {
 		h.log.Error(err)
@@ -88,36 +89,29 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 
 	switch metric.MType {
 	case "counter":
-		cnt, found := h.storage.GetCounter(metric.ID)
-		if !found {
-			newErrorResponse(c, http.StatusNotFound, "Metric not found")
+		if metric.Delta == nil {
+			h.log.Info("Can't find  metric tag Delta")
+			c.JSON(http.StatusBadRequest, 0)
 			return
 		}
+		metricValue := *metric.Delta
 
-		tmp := int64(cnt)
-		// cnt := int64(h.storage.UpdateCounter(metric.ID, metricValue))
-		metric := models.Metrics{
-			ID:    metric.ID,
-			MType: "counter",
-			Delta: &tmp,
-		}
+		cnt := int64(h.storage.UpdateCounter(metric.ID, metricValue))
+
+		metric.Delta = &cnt
 
 		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		c.JSON(http.StatusOK, metric)
 	case "gauge":
-		gug, found := h.storage.GetGauge(metric.ID)
-
-		if !found {
-			newErrorResponse(c, http.StatusNotFound, "Metric not found")
+		if metric.Value == nil {
+			h.log.Info("Can't find tag metric  Value")
+			c.JSON(http.StatusBadRequest, 0)
 			return
 		}
-		tmp := float64(gug)
-
-		metric := models.Metrics{
-			ID:    metric.ID,
-			MType: "gauge",
-			Value: &tmp,
-		}
+		metricValue := *metric.Value
+		gug := float64(h.storage.UpdateGauge(metric.ID, metricValue))
+		h.log.Info("Update gauge data with value ", gug)
+		metric.Value = &gug
 
 		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		c.JSON(http.StatusOK, metric)

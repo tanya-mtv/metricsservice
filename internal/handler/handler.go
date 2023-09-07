@@ -71,6 +71,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 
 	jsonData, _ := io.ReadAll(c.Request.Body)
 
+	fmt.Println("111111111111111111", string(jsonData))
 	if err := json.Unmarshal(jsonData, &metrics); err != nil {
 
 		fmt.Println("2222222222222222222222222222", err)

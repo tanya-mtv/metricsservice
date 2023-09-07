@@ -1,13 +1,20 @@
 package handler
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/tanya-mtv/metricsservice/internal/config"
+	"github.com/tanya-mtv/metricsservice/internal/constants"
+	"github.com/tanya-mtv/metricsservice/internal/logger"
+	"github.com/tanya-mtv/metricsservice/internal/repository"
+
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -69,76 +76,80 @@ func TestRouter(t *testing.T) {
 	}
 }
 
-// func TestHandler_PostMetricsList(t *testing.T) {
-// 	idCounter := "PollCount"
-// 	idGauge := "SomeGauge"
-// 	valueCounter1, valueCounter2 := int64(rand.Int31()), int64(rand.Int31())
-// 	valueGauge1, valueGauge2 := float64(rand.Float64()), float64(rand.Float64())
-// 	metrics := []models.Metrics{
-// 		{
-// 			ID:    idCounter,
-// 			MType: "counter",
-// 			Delta: &valueCounter1,
-// 		},
-// 		{
-// 			ID:    idGauge,
-// 			MType: "gauge",
-// 			Value: &valueGauge1,
-// 		},
-// 		{
-// 			ID:    idCounter,
-// 			MType: "counter",
-// 			Delta: &valueCounter2,
-// 		},
-// 		{
-// 			ID:    idGauge,
-// 			MType: "gauge",
-// 			Value: &valueGauge2,
-// 		},
-// 	}
-// 	tests := []struct {
-// 		name     string
-// 		sentdata []models.Metrics
-// 		status   int
-// 	}{
-// 		{
-// 			name:     "Test post list metrics json",
-// 			sentdata: metrics,
-// 			status:   http.StatusOK,
-// 		},
-// 	}
+func TestHandler_PostMetricsList(t *testing.T) {
+	// idCounter := "PollCount"
+	// idGauge := "SomeGauge"
+	// valueCounter1, valueCounter2 := int64(rand.Int31()), int64(rand.Int31())
+	// valueGauge1, valueGauge2 := float64(rand.Float64()), float64(rand.Float64())
+	metrics := `{
+        ID:    idCounter,
+        MType: "counter",
+        Delta: 10,
+    },
+    {
+        ID:    idGauge,
+        MType: "gauge",
+        Value: 15632,
+    },
+    {
+        ID:    idCounter,
+        MType: "counter",
+        Delta: 100,
+    },
+    {
+        ID:    idGauge,
+        MType: "gauge",
+        Value: 2568745,
+    }`
 
-// 	gin.SetMode(gin.TestMode)
+	tests := []struct {
+		name     string
+		sentdata string
+		status   int
+		wantbody string
+	}{
+		{
+			name:     "Test post list metrics json",
+			sentdata: metrics,
+			status:   http.StatusBadRequest,
+			wantbody: "Metrics was read",
+		},
+	}
 
-// 	cfglog := &logger.Config{
-// 		LogLevel: constants.LogLevel,
-// 		DevMode:  constants.DevMode,
-// 		Type:     constants.Type,
-// 	}
+	gin.SetMode(gin.TestMode)
 
-// 	cfg := &config.ConfigServer{Port: "8080"}
-// 	log := logger.NewAppLogger(cfglog)
+	cfglog := &logger.Config{
+		LogLevel: constants.LogLevel,
+		DevMode:  constants.DevMode,
+		Type:     constants.Type,
+	}
 
-// 	stor := repository.NewMetricStorage()
+	cfg := &config.ConfigServer{Port: "8080"}
+	log := logger.NewAppLogger(cfglog)
 
-// 	h := NewHandler(stor, cfg, log)
+	stor := repository.NewMetricStorage()
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			w := httptest.NewRecorder()
-// 			c, r := gin.CreateTestContext(w)
-// 			r.POST("/", h.PostMetricsList)
+	h := NewHandler(stor, cfg, log)
 
-// 			c.Request = httptest.NewRequest(http.MethodPost, "/updates", nil)
-// 			c.Request.Body = metrics
-// 			r.ServeHTTP(w, c.Request)
-
-// 			result := w.Result()
-
-// 			fmt.Println("111111111111", c.Request.Body)
-// 			defer result.Body.Close()
-// 			require.Equal(t, tt.status, result.StatusCode)
-
-// 		})
-// 	}
-// }
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, r := gin.CreateTestContext(w)
+			r.POST("/update/", h.PostMetricsList)
+			buf := bytes.NewBufferString(tt.sentdata)
+			c.Request = httptest.NewRequest(http.MethodPost, "/update/", buf)
+			r.ServeHTTP(w, c.Request)
+			result := w.Result()
+			defer result.Body.Close()
+			assert.Equal(t, tt.status, result.StatusCode)
+			if result.StatusCode != http.StatusOK {
+				return
+			}
+			resp := bytes.Buffer{}
+			if _, err := resp.ReadFrom(result.Body); !assert.NoError(t, err, "error while decoding") {
+				return
+			}
+			assert.JSONEq(t, tt.wantbody, resp.String())
+		})
+	}
+}

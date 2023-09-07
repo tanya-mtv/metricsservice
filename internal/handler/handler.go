@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 
 	"net/http"
@@ -59,14 +58,27 @@ func (h *Handler) GetMethodGauge(c *gin.Context) {
 }
 
 func (h *Handler) PostMetricsList(c *gin.Context) {
+	// var val []byte = []byte(input)
+	// jsonInput, err := strconv.Unquote(string(val))
+	// if err !=nil{
+	//     fmt.Println(err)
+	// }
+	// var resp Users
+	// json.Unmarshal([]byte(jsonInput), &resp)
 
 	metrics := make([]models.Metrics, 0)
 
-	jsonData, _ := io.ReadAll(c.Request.Body)
-	fmt.Println("11111111111111111111111111111", jsonData)
-	if err := json.Unmarshal(jsonData, &metrics); err != nil {
-		fmt.Println("2222222222222222222222222222", err)
-		h.log.Error(err)
+	// jsonData, _ := io.ReadAll(c.Request.Body)
+
+	// if err := json.Unmarshal(jsonData, &metrics); err != nil {
+	// 	newErrorResponse(c, http.StatusBadRequest, err.Error())
+	// 	fmt.Println("2222222222222222222222222222", err)
+	// 	h.log.Error(err)
+	// }
+
+	if err := c.BindJSON(&metrics); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
 	}
 
 	err := h.storage.UpdateMetrics(metrics)

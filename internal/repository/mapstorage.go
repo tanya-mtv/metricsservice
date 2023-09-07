@@ -78,7 +78,7 @@ func (m *MetricStorage) GetGauge(metricName string) (Gauge, bool) {
 	return res, found
 }
 
-func (m *MetricStorage) UpdateMetrics(metrics []models.Metrics) error {
+func (m *MetricStorage) UpdateMetrics(metrics []*models.Metrics) ([]*models.Metrics, error) {
 	for _, value := range metrics {
 		switch value.MType {
 		case "counter":
@@ -94,5 +94,5 @@ func (m *MetricStorage) UpdateMetrics(metrics []models.Metrics) error {
 			m.gaugeData[value.ID] = Gauge(tmp)
 		}
 	}
-	return nil
+	return metrics, nil
 }

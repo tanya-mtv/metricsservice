@@ -22,7 +22,7 @@ type metricStorage interface {
 	GetAll() []models.Metrics
 	GetCounter(metricName string) (repository.Counter, bool)
 	GetGauge(metricName string) (repository.Gauge, bool)
-	UpdateMetrics([]models.Metrics) error
+	UpdateMetrics([]*models.Metrics) ([]*models.Metrics, error)
 }
 
 type server struct {

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 
 	"net/http"
@@ -68,17 +69,12 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 
 	metrics := make([]models.Metrics, 0)
 
-	// jsonData, _ := io.ReadAll(c.Request.Body)
+	jsonData, _ := io.ReadAll(c.Request.Body)
 
-	// if err := json.Unmarshal(jsonData, &metrics); err != nil {
-	// 	newErrorResponse(c, http.StatusBadRequest, err.Error())
-	// 	fmt.Println("2222222222222222222222222222", err)
-	// 	h.log.Error(err)
-	// }
-
-	if err := c.BindJSON(&metrics); err != nil {
+	if err := json.Unmarshal(jsonData, &metrics); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
+		fmt.Println("2222222222222222222222222222", err)
+		h.log.Error(err)
 	}
 
 	err := h.storage.UpdateMetrics(metrics)

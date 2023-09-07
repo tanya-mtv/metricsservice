@@ -66,18 +66,16 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 	// var resp Users
 	// json.Unmarshal([]byte(jsonInput), &resp)
 
+	jsonData, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		h.log.Error(err)
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+	}
+
 	metrics := make([]*models.Metrics, 0)
-
-	// jsonData, _ := io.ReadAll(c.Request.Body)
-
-	// if err := json.Unmarshal(jsonData, &metrics); err != nil {
-	// 	h.log.Error(err)
-	// 	newErrorResponse(c, http.StatusBadRequest, err.Error())
-	// }
-
-	if err := json.NewDecoder(c.Request.Body).Decode(&metrics); err != nil {
-		c.Status(http.StatusBadRequest)
-		return
+	if err := json.Unmarshal(jsonData, &metrics); err != nil {
+		h.log.Error(err)
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
 	}
 
 	updatelist, err := h.storage.UpdateMetrics(metrics)

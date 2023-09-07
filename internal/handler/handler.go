@@ -72,9 +72,10 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 	jsonData, _ := io.ReadAll(c.Request.Body)
 
 	if err := json.Unmarshal(jsonData, &metrics); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+
 		fmt.Println("2222222222222222222222222222", err)
 		h.log.Error(err)
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
 	}
 
 	err := h.storage.UpdateMetrics(metrics)

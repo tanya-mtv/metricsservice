@@ -149,7 +149,7 @@ func (m *DBStorage) GetGauge(metricName string) (Gauge, bool) {
 	return Gauge(gug), true
 }
 
-func (m *DBStorage) UpdateMetrics(metrics []*models.Metrics) ([]*models.Metrics, error) {
+func (m *DBStorage) UpdateMetrics(metrics []*models.MetricsP) ([]*models.MetricsP, error) {
 
 	tx, err := m.db.Begin()
 	if err != nil {

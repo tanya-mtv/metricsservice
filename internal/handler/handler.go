@@ -89,11 +89,7 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 
 	switch metric.MType {
 	case "counter":
-		// if metric.Delta == nil {
-		// 	h.log.Info("Can't find  metric tag Delta")
-		// 	c.JSON(http.StatusBadRequest, 0)
-		// 	return
-		// }
+
 		cnt, found := h.storage.GetCounter(metric.ID)
 		if !found {
 			newErrorResponse(c, http.StatusNotFound, "Metric not found")
@@ -111,11 +107,7 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		c.JSON(http.StatusOK, metric)
 	case "gauge":
-		// if metric.Value == nil {
-		// 	h.log.Info("Can't find tag metric  Value")
-		// 	c.JSON(http.StatusBadRequest, 0)
-		// 	return
-		// }
+
 		gug, found := h.storage.GetGauge(metric.ID)
 
 		if !found {

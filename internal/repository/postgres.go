@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"strings"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
@@ -129,24 +127,6 @@ func (m *DBStorage) GetAll() []models.Metrics {
 	return metricsSlice
 }
 
-func (m *DBStorage) GetAllCounter() map[string]int64 {
-	metricsSlice := make([]models.Metrics, 0, 29)
-	elementMap := make(map[string]int64, 0)
-	query := "SELECT id, mtype, delta, value from metrics where mtype='counter'"
-
-	err := m.db.Select(&metricsSlice, query)
-	if err != nil {
-		m.log.Error("Can't get all metric ")
-		return elementMap
-	}
-
-	for _, value := range metricsSlice {
-		name := strings.TrimSpace(value.ID)
-		elementMap[name] = *value.Delta
-	}
-	return elementMap
-}
-
 func (m *DBStorage) GetCounter(metricName string) (Counter, bool) {
 	var cnt int64
 	query := "SELECT delta from metrics WHERE ID = $1"
@@ -170,7 +150,6 @@ func (m *DBStorage) GetGauge(metricName string) (Gauge, bool) {
 }
 
 func (m *DBStorage) UpdateMetrics(metrics []models.Metrics) error {
-	cntMap := m.GetAllCounter()
 
 	tx, err := m.db.Begin()
 	if err != nil {
@@ -192,8 +171,8 @@ func (m *DBStorage) UpdateMetrics(metrics []models.Metrics) error {
 	for _, v := range metrics {
 		switch v.MType {
 		case "counter":
-			newDelta := cntMap[v.ID] + *v.Delta
-			_, err = stmt.Exec(v.ID, v.MType, newDelta, 0, newDelta, 0)
+			cnt := m.UpdateCounter(v.ID, *v.Delta)
+			m.log.Debug("Update counter. New value is ", cnt)
 		case "gauge":
 			_, err = stmt.Exec(v.ID, v.MType, 0, *v.Value, 0, *v.Value)
 		}
@@ -201,6 +180,8 @@ func (m *DBStorage) UpdateMetrics(metrics []models.Metrics) error {
 			return err
 		}
 	}
+
 	tx.Commit()
+
 	return nil
 }

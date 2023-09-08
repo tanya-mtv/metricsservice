@@ -67,7 +67,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 	}
 
 	jsonDatarep := bytes.Replace(jsonData, []byte("Mtype"), []byte("type"), -1)
-
+	h.log.Info("Send data", string(jsonDatarep))
 	metrics := make([]*models.Metrics, 0)
 	if err := json.Unmarshal(jsonDatarep, &metrics); err != nil {
 		h.log.Error(err)
@@ -87,7 +87,9 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 			m := models.MetricsP{ID: val.ID, MType: val.MType, Delta: val.Delta, Value: val.Value}
 			newList = append(newList, m)
 		}
+
 		c.JSON(http.StatusOK, newList)
+		return
 	}
 	c.JSON(http.StatusOK, list)
 

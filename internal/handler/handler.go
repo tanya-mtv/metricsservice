@@ -68,7 +68,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 
 	jsonDatarep := bytes.Replace(jsonData, []byte("Mtype"), []byte("type"), -1)
 
-	metrics := make([]*models.Metrics, 0)
+	var metrics []*models.Metrics
 	if err := json.Unmarshal(jsonDatarep, &metrics); err != nil {
 		h.log.Error(err)
 		newErrorResponse(c, http.StatusBadRequest, "{}")

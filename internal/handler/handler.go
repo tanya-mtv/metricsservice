@@ -66,10 +66,10 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 	}
 
-	jsonDatarep := bytes.Replace(jsonData, []byte("Mtype"), []byte("type"), -1)
-	h.log.Info("Send data", string(jsonDatarep))
+	// jsonDatarep := bytes.Replace(jsonData, []byte("Mtype"), []byte("type"), -1)
+
 	metrics := make([]*models.Metrics, 0)
-	if err := json.Unmarshal(jsonDatarep, &metrics); err != nil {
+	if err := json.Unmarshal(jsonData, &metrics); err != nil {
 		h.log.Error(err)
 		newErrorResponse(c, http.StatusBadRequest, "{}")
 	}
@@ -80,16 +80,16 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "{}")
 		return
 	}
+
 	if bytes.Contains(jsonData, []byte("Mtype")) {
-		var newList []models.MetricsP
+		// var newList []models.MetricsP
 
-		for _, val := range list {
-			m := models.MetricsP{ID: val.ID, MType: val.MType, Delta: val.Delta, Value: val.Value}
-			newList = append(newList, m)
-		}
+		// for _, val := range list {
+		// 	m := models.MetricsP{ID: val.ID, MType: val.MType, Delta: val.Delta, Value: val.Value}
+		// 	newList = append(newList, m)
+		// }
 
-		c.JSON(http.StatusOK, newList)
-		return
+		c.JSON(http.StatusOK, "{}")
 	}
 	c.JSON(http.StatusOK, list)
 

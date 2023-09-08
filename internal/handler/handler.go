@@ -59,6 +59,9 @@ func (h *Handler) GetMethodGauge(c *gin.Context) {
 }
 
 func (h *Handler) PostMetricsList(c *gin.Context) {
+
+	jsonData, err := io.ReadAll(c.Request.Body)
+
 	if bytes.Contains(jsonData, []byte("Mtype")) {
 		// var newList []models.MetricsP
 
@@ -69,7 +72,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 
 		c.JSON(http.StatusOK, "{}")
 	}
-	jsonData, err := io.ReadAll(c.Request.Body)
+
 	if err != nil {
 		h.log.Error(err)
 		newErrorResponse(c, http.StatusBadRequest, err.Error())

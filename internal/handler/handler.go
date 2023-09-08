@@ -74,14 +74,14 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, "{}")
 	}
 
-	err = h.storage.UpdateMetrics(metrics)
+	list, err := h.storage.UpdateMetrics(metrics)
 	if err != nil {
 		h.log.Error("Can't update metrics", err)
-		c.JSON(http.StatusBadRequest, "Can't write metrics to storage")
+		c.JSON(http.StatusBadRequest, "{}")
 		return
 	}
 
-	c.JSON(http.StatusOK, "{}")
+	c.JSON(http.StatusOK, list)
 
 }
 

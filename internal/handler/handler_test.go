@@ -70,10 +70,7 @@ func TestRouter(t *testing.T) {
 }
 
 // func TestHandler_PostMetricsList(t *testing.T) {
-// 	// idCounter := "PollCount"
-// 	// idGauge := "SomeGauge"
-// 	// valueCounter1, valueCounter2 := int64(rand.Int31()), int64(rand.Int31())
-// 	// valueGauge1, valueGauge2 := float64(rand.Float64()), float64(rand.Float64())
+
 // 	metrics := `[{
 //         ID:    idCounter,
 //         MType: "counter",
@@ -104,7 +101,7 @@ func TestRouter(t *testing.T) {
 // 		{
 // 			name:     "Test post list metrics json",
 // 			sentdata: metrics,
-// 			status:   http.StatusBadRequest,
+// 			status:   http.StatusOK,
 // 			wantbody: "Metrics was read",
 // 		},
 // 	}
@@ -128,21 +125,39 @@ func TestRouter(t *testing.T) {
 // 		t.Run(tt.name, func(t *testing.T) {
 // 			w := httptest.NewRecorder()
 // 			c, r := gin.CreateTestContext(w)
-// 			r.POST("/update/", h.PostMetricsList)
-// 			buf := bytes.NewBufferString(tt.sentdata)
-// 			c.Request = httptest.NewRequest(http.MethodPost, "/update/", buf)
+// 			r.POST("/updates", h.PostMetricsList)
+// 			c.Request = httptest.NewRequest(http.MethodPost, "/updates", nil)
+
 // 			r.ServeHTTP(w, c.Request)
+
 // 			result := w.Result()
+
 // 			defer result.Body.Close()
-// 			assert.Equal(t, tt.status, result.StatusCode)
-// 			if result.StatusCode != http.StatusOK {
-// 				return
-// 			}
-// 			resp := bytes.Buffer{}
-// 			if _, err := resp.ReadFrom(result.Body); !assert.NoError(t, err, "error while decoding") {
-// 				return
-// 			}
-// 			assert.JSONEq(t, tt.wantbody, resp.String())
+// 			require.Equal(t, tt.status, result.StatusCode)
+// 			// require.Equal(t, tt.want, result.Header["Content-Type"])
+
+// 			// w := httptest.NewRecorder()
+// 			// c, r := gin.CreateTestContext(w)
+
+// 			// r.POST("/updates/", h.PostMetricsList)
+// 			// buf := bytes.NewBufferString(tt.sentdata)
+// 			// fmt.Println("1")
+// 			// c.Request = httptest.NewRequest(http.MethodPost, "/updates/", buf)
+// 			// fmt.Println("2")
+// 			// r.ServeHTTP(w, c.Request)
+// 			// fmt.Println("3")
+// 			// result := w.Result()
+// 			// defer result.Body.Close()
+
+// 			// fmt.Println("111111111111111111", result)
+// 			// require.Equal(t, tt.status, result.StatusCode)
+// 			// if result.StatusCode != http.StatusOK {
+// 			// 	return
+// 			// }
+// 			// resp := bytes.Buffer{}
+// 			// _, err := resp.ReadFrom(result.Body)
+// 			// require.NoError(t, err, "error while decoding")
+// 			// require.JSONEq(t, tt.wantbody, resp.String())
 // 		})
 // 	}
 // }

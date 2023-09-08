@@ -5,10 +5,15 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
+	"github.com/tanya-mtv/metricsservice/internal/config"
+	"github.com/tanya-mtv/metricsservice/internal/constants"
+	"github.com/tanya-mtv/metricsservice/internal/logger"
+	"github.com/tanya-mtv/metricsservice/internal/repository"
 )
 
 func testRequest(t *testing.T, ts *gin.Engine, method,
@@ -69,95 +74,102 @@ func TestRouter(t *testing.T) {
 	}
 }
 
-// func TestHandler_PostMetricsList(t *testing.T) {
+func TestHandler_PostMetricsList(t *testing.T) {
 
-// 	metrics := `[{
-//         ID:    idCounter,
-//         MType: "counter",
-//         Delta: 10,
-//     },
-//     {
-//         ID:    idGauge,
-//         MType: "gauge",
-//         Value: 15632,
-//     },
-//     {
-//         ID:    idCounter,
-//         MType: "counter",
-//         Delta: 100,
-//     },
-//     {
-//         ID:    idGauge,
-//         MType: "gauge",
-//         Value: 2568745,
-//     }]`
+	// metrics := `[{
+	//     "ID":    "idCounter",
+	//     "type": "counter",
+	//     "Delta": 10
+	// },
+	// {
+	//     "ID":    "idCounter",
+	//     "type": "counter",
+	//     "Delta": 10
+	// },
+	// {
+	//     "ID":    "idCounter",
+	//     "type": "counter",
+	//     "Delta": 10
+	// },
+	// {
+	//     "ID":    "idCounter",
+	//     "type": "counter",
+	//     "Delta": 10
+	// }]`
 
-// 	tests := []struct {
-// 		name     string
-// 		sentdata string
-// 		status   int
-// 		wantbody string
-// 	}{
-// 		{
-// 			name:     "Test post list metrics json",
-// 			sentdata: metrics,
-// 			status:   http.StatusOK,
-// 			wantbody: "Metrics was read",
-// 		},
-// 	}
+	metrics := `[{
+	    "ID":"idCounter",
+	    "Mtype":"counter",
+	    "Delta": 10
+	}]`
 
-// 	gin.SetMode(gin.TestMode)
+	tests := []struct {
+		name     string
+		sentdata string
+		status   int
+		wantbody string
+	}{
+		{
+			name:     "Test post list metrics json",
+			sentdata: metrics,
+			status:   http.StatusOK,
+			wantbody: "Metrics was read",
+		},
+	}
 
-// 	cfglog := &logger.Config{
-// 		LogLevel: constants.LogLevel,
-// 		DevMode:  constants.DevMode,
-// 		Type:     constants.Type,
-// 	}
+	gin.SetMode(gin.TestMode)
 
-// 	cfg := &config.ConfigServer{Port: "8080"}
-// 	log := logger.NewAppLogger(cfglog)
+	cfglog := &logger.Config{
+		LogLevel: constants.LogLevel,
+		DevMode:  constants.DevMode,
+		Type:     constants.Type,
+	}
 
-// 	stor := repository.NewMetricStorage()
+	cfg := &config.ConfigServer{Port: "8080"}
+	log := logger.NewAppLogger(cfglog)
 
-// 	h := NewHandler(stor, cfg, log)
+	stor := repository.NewMetricStorage()
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			w := httptest.NewRecorder()
-// 			c, r := gin.CreateTestContext(w)
-// 			r.POST("/updates", h.PostMetricsList)
-// 			c.Request = httptest.NewRequest(http.MethodPost, "/updates", nil)
+	h := NewHandler(stor, cfg, log)
 
-// 			r.ServeHTTP(w, c.Request)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, r := gin.CreateTestContext(w)
+			r.POST("/updates/", h.PostMetricsList)
+			buf := strings.NewReader(tt.sentdata)
 
-// 			result := w.Result()
+			c.Request = httptest.NewRequest(http.MethodPost, "/updates/", buf)
 
-// 			defer result.Body.Close()
-// 			require.Equal(t, tt.status, result.StatusCode)
-// 			// require.Equal(t, tt.want, result.Header["Content-Type"])
+			r.ServeHTTP(w, c.Request)
 
-// 			// w := httptest.NewRecorder()
-// 			// c, r := gin.CreateTestContext(w)
+			result := w.Result()
 
-// 			// r.POST("/updates/", h.PostMetricsList)
-// 			// buf := bytes.NewBufferString(tt.sentdata)
-// 			// fmt.Println("1")
-// 			// c.Request = httptest.NewRequest(http.MethodPost, "/updates/", buf)
-// 			// fmt.Println("2")
-// 			// r.ServeHTTP(w, c.Request)
-// 			// fmt.Println("3")
-// 			// result := w.Result()
-// 			// defer result.Body.Close()
+			defer result.Body.Close()
+			require.Equal(t, tt.status, result.StatusCode)
 
-// 			// fmt.Println("111111111111111111", result)
-// 			// require.Equal(t, tt.status, result.StatusCode)
-// 			// if result.StatusCode != http.StatusOK {
-// 			// 	return
-// 			// }
-// 			// resp := bytes.Buffer{}
-// 			// _, err := resp.ReadFrom(result.Body)
-// 			// require.NoError(t, err, "error while decoding")
-// 			// require.JSONEq(t, tt.wantbody, resp.String())
-// 		})
-// 	}
-// }
+			// w := httptest.NewRecorder()
+			// c, r := gin.CreateTestContext(w)
+
+			// r.POST("/update/", h.PostMetricsUpdateJSON)
+			// buf := strings.NewReader(tt.sentdata)
+
+			// c.Request = httptest.NewRequest(http.MethodPost, "/update/", buf)
+			// fmt.Println("2")
+			// r.ServeHTTP(w, c.Request)
+			// fmt.Println("3")
+			// result := w.Result()
+			// defer result.Body.Close()
+
+			// fmt.Println("111111111111111111", result)
+			// require.Equal(t, tt.status, result.StatusCode)
+			// if result.StatusCode != http.StatusOK {
+			// 	return
+			// }
+			// resp := bytes.Buffer{}
+			// _, err := resp.ReadFrom(result.Body)
+			// require.NoError(t, err, "error while decoding")
+			// require.JSONEq(t, tt.wantbody, resp.String())
+		})
+	}
+}

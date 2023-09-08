@@ -85,7 +85,10 @@ func (m *MetricStorage) UpdateMetrics(metrics []*models.Metrics) ([]*models.Metr
 			m.countersLock.Lock()
 			defer m.countersLock.Unlock()
 			tmp := *value.Delta
+
 			m.counterData[value.ID] += Counter(tmp)
+			tmp1 := int64(m.counterData[value.ID])
+			value.Delta = &tmp1
 		case "gauge":
 			m.gaugesLock.Lock()
 			defer m.gaugesLock.Unlock()

@@ -63,7 +63,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 	jsonData, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		h.log.Error(err)
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		newErrorResponse(c, http.StatusBadRequest, "{}")
 	}
 
 	jsonDatarep := bytes.Replace(jsonData, []byte("Mtype"), []byte("type"), -1)

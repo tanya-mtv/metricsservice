@@ -88,6 +88,8 @@ func (m *FileStorage) UpdateMetrics(metrics []*models.Metrics) ([]*models.Metric
 			tmp := *value.Delta
 
 			m.counterData[value.ID] += Counter(tmp)
+			tmp1 := int64(m.counterData[value.ID])
+			value.Delta = &tmp1
 
 		case "gauge":
 			m.gaugesLock.Lock()

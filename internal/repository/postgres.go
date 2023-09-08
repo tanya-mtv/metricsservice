@@ -149,11 +149,11 @@ func (m *DBStorage) GetGauge(metricName string) (Gauge, bool) {
 	return Gauge(gug), true
 }
 
-func (m *DBStorage) UpdateMetrics(metrics []*models.MetricsP) ([]*models.MetricsP, error) {
+func (m *DBStorage) UpdateMetrics(metrics []*models.Metrics) error {
 
 	tx, err := m.db.Begin()
 	if err != nil {
-		return metrics, err
+		return err
 	}
 	// можно вызвать Rollback в defer,
 	// если Commit будет раньше, то откат проигнорируется
@@ -164,7 +164,7 @@ func (m *DBStorage) UpdateMetrics(metrics []*models.MetricsP) ([]*models.Metrics
 			"ON CONFLICT (id) DO UPDATE SET delta = $5,  value=$6")
 
 	if err != nil {
-		return metrics, err
+		return err
 	}
 	defer stmt.Close()
 
@@ -181,11 +181,11 @@ func (m *DBStorage) UpdateMetrics(metrics []*models.MetricsP) ([]*models.Metrics
 
 		}
 		if err != nil {
-			return metrics, err
+			return err
 		}
 	}
 
 	tx.Commit()
 
-	return metrics, nil
+	return nil
 }

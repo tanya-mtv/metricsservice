@@ -58,13 +58,6 @@ func (h *Handler) GetMethodGauge(c *gin.Context) {
 }
 
 func (h *Handler) PostMetricsList(c *gin.Context) {
-	// var val []byte = []byte(input)
-	// jsonInput, err := strconv.Unquote(string(val))
-	// if err !=nil{
-	//     fmt.Println(err)
-	// }
-	// var resp Users
-	// json.Unmarshal([]byte(jsonInput), &resp)
 
 	jsonData, err := io.ReadAll(c.Request.Body)
 	if err != nil {
@@ -72,20 +65,20 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 	}
 
-	metrics := make([]*models.MetricsP, 0)
+	metrics := make([]*models.Metrics, 0)
 	if err := json.Unmarshal(jsonData, &metrics); err != nil {
 		h.log.Error(err)
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		newErrorResponse(c, http.StatusBadRequest, "{}")
 	}
 
-	updatelist, err := h.storage.UpdateMetrics(metrics)
+	err = h.storage.UpdateMetrics(metrics)
 	if err != nil {
 		h.log.Error("Can't update metrics", err)
 		c.JSON(http.StatusBadRequest, "Can't write metrics to storage")
 		return
 	}
 
-	c.JSON(http.StatusOK, updatelist)
+	c.JSON(http.StatusOK, "{}")
 
 }
 

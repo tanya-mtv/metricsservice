@@ -78,7 +78,7 @@ func (m *FileStorage) GetGauge(metricName string) (Gauge, bool) {
 	return res, found
 }
 
-func (m *FileStorage) UpdateMetrics(metrics []*models.MetricsP) ([]*models.MetricsP, error) {
+func (m *FileStorage) UpdateMetrics(metrics []*models.Metrics) error {
 
 	for _, value := range metrics {
 		switch value.MType {
@@ -98,5 +98,5 @@ func (m *FileStorage) UpdateMetrics(metrics []*models.MetricsP) ([]*models.Metri
 			m.gaugeData[value.ID] = Gauge(tmp)
 		}
 	}
-	return metrics, nil
+	return nil
 }

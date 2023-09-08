@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 
@@ -65,8 +66,10 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 	}
 
+	jsonDatarep := bytes.Replace(jsonData, []byte("Mtype"), []byte("type"), -1)
+
 	metrics := make([]*models.Metrics, 0)
-	if err := json.Unmarshal(jsonData, &metrics); err != nil {
+	if err := json.Unmarshal(jsonDatarep, &metrics); err != nil {
 		h.log.Error(err)
 		newErrorResponse(c, http.StatusBadRequest, "{}")
 	}

@@ -59,7 +59,16 @@ func (h *Handler) GetMethodGauge(c *gin.Context) {
 }
 
 func (h *Handler) PostMetricsList(c *gin.Context) {
+	if bytes.Contains(jsonData, []byte("Mtype")) {
+		// var newList []models.MetricsP
 
+		// for _, val := range list {
+		// 	m := models.MetricsP{ID: val.ID, MType: val.MType, Delta: val.Delta, Value: val.Value}
+		// 	newList = append(newList, m)
+		// }
+
+		c.JSON(http.StatusOK, "{}")
+	}
 	jsonData, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		h.log.Error(err)
@@ -81,16 +90,6 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		return
 	}
 
-	if bytes.Contains(jsonData, []byte("Mtype")) {
-		// var newList []models.MetricsP
-
-		// for _, val := range list {
-		// 	m := models.MetricsP{ID: val.ID, MType: val.MType, Delta: val.Delta, Value: val.Value}
-		// 	newList = append(newList, m)
-		// }
-
-		c.JSON(http.StatusOK, "{}")
-	}
 	c.JSON(http.StatusOK, list)
 
 }

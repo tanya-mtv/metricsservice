@@ -105,16 +105,16 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 	// 	newList = append(newList, m)
 	// }
 
-	data, err := json.Marshal(&list)
-	if err != nil {
-		h.log.Debug("Cannot serialize Response structure `list`")
-		return
-	}
-	fmt.Printf("Response PostMetricsList %+v \n", string(data))
-	// c.Writer.Header().Set("Content-Type", "application/json")
-	// c.Writer.Header().Set("Accept-Encoding", "gzip")
-	c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-	c.JSON(http.StatusOK, list)
+	// data, err := json.Marshal(&list)
+	// if err != nil {
+	// 	h.log.Debug("Cannot serialize Response structure `list`")
+	// 	return
+	// }
+	// fmt.Printf("Response PostMetricsList %+v \n", string(data))
+	fmt.Printf("Response PostMetricsList %+v \n", list)
+	c.Writer.Header().Set("Content-Type", "application/json")
+
+	c.JSON(http.StatusOK, "{}")
 
 }
 

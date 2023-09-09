@@ -89,7 +89,22 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, list)
+	// data, err := json.Marshal(&list)
+	// if err != nil {
+	// 	h.log.Debug("Cannot serialize structure")
+	// 	return
+	// }
+	// fmt.Printf("Response PostMetricsList %+v \n", string(data))
+
+	// jsonResp := bytes.Replace(data, []byte("type"), []byte("MType"), -1)
+
+	var newList []models.MetricsP
+
+	for _, value := range list {
+		m := models.MetricsP{ID: value.ID, MType: value.MType, Delta: value.Delta, Value: value.Value}
+		newList = append(newList, m)
+	}
+	c.JSON(http.StatusOK, newList)
 
 }
 

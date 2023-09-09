@@ -111,6 +111,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		return
 	}
 	fmt.Printf("Response PostMetricsList %+v \n", string(data))
+	c.Writer.Header().Set("Accept", "application/json")
 
 	c.JSON(http.StatusOK, list)
 

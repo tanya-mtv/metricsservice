@@ -132,7 +132,7 @@ func (m *DBStorage) GetCounter(metricName string) (Counter, bool) {
 	query := "SELECT delta from metrics WHERE ID = $1"
 	err := m.db.Get(&cnt, query, metricName)
 	if err != nil {
-		m.log.Error("Can't get counter from DB ")
+		m.log.Error("Can't get counter from DB ", metricName)
 		return 0, false
 	}
 	return Counter(cnt), true
@@ -143,7 +143,7 @@ func (m *DBStorage) GetGauge(metricName string) (Gauge, bool) {
 	query := "SELECT value from metrics WHERE ID = $1"
 	err := m.db.Get(&gug, query, metricName)
 	if err != nil {
-		m.log.Error("Can't get counter from DB ")
+		m.log.Error("Can't get Gauge from DB ", metricName)
 		return 0, false
 	}
 	return Gauge(gug), true

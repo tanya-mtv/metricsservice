@@ -106,7 +106,6 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, "{}")
 		h.log.Error(err)
 		return
-
 	}
 
 	switch metric.MType {
@@ -193,7 +192,9 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 
 	jsonData, _ := io.ReadAll(c.Request.Body)
 	if err := json.Unmarshal(jsonData, &metric); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "{}")
 		h.log.Error(err)
+		return
 	}
 
 	switch metric.MType {

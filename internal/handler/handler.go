@@ -65,7 +65,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 	fmt.Printf("jsonData PostMetricsList %+v \n", string(jsonData))
 	if err != nil {
 		h.log.Error("PostMetricsList", err)
-		newErrorResponse(c, http.StatusOK, "{}")
+		newErrorResponse(c, http.StatusBadRequest, "{}")
 	}
 
 	jsonDatarep := bytes.Replace(jsonData, []byte("Mtype"), []byte("type"), -1)
@@ -73,7 +73,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 	var metrics []*models.Metrics
 	if err := json.Unmarshal(jsonDatarep, &metrics); err != nil {
 		h.log.Error(err)
-		newErrorResponse(c, http.StatusOK, "{}")
+		newErrorResponse(c, http.StatusBadRequest, "{}")
 	}
 
 	list, err := h.storage.UpdateMetrics(metrics)

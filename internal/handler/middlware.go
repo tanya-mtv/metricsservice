@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -15,6 +17,10 @@ func (h *Handler) WithLogging(c *gin.Context) {
 	req := c.Request
 	res := c.Writer
 
+	if strings.Contains(req.RequestURI, "updates") {
+		jsonData, err := io.ReadAll(req.Body)
+		fmt.Println("body", string(jsonData), err)
+	}
 	c.Next()
 
 	duration := time.Since(start)
@@ -63,4 +69,10 @@ func (h *Handler) GzipMiddleware(c *gin.Context) {
 
 	c.Next()
 
+}
+
+func (h *Handler) RequireContentType(c *gin.Context) {
+	if c.ContentType() != "application/json" {
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
 }

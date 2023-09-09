@@ -98,7 +98,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 
 	// jsonResp := bytes.Replace(data, []byte("type"), []byte("MType"), -1)
 
-	// var newList []models.MetricsP
+	var newList []models.Metrics
 
 	// for _, value := range list {
 	// 	m := models.MetricsP{ID: value.ID, MType: value.MType, Delta: value.Delta, Value: value.Value}
@@ -114,7 +114,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 	fmt.Printf("Response PostMetricsList %+v \n", list)
 	c.Writer.Header().Set("Content-Type", "application/json")
 
-	c.JSON(http.StatusOK, "{}")
+	c.JSON(http.StatusOK, newList)
 
 }
 

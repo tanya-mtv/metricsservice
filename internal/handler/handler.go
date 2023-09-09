@@ -94,12 +94,19 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 }
 
 func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
-
+	if c.ContentType() != "application/json" {
+		h.log.Error("PostMetricsValueJSON. Incorrect  ContentType")
+		newErrorResponse(c, http.StatusBadRequest, "{}")
+		return
+	}
 	var metric models.Metrics
 
 	jsonData, _ := io.ReadAll(c.Request.Body)
 	if err := json.Unmarshal(jsonData, &metric); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "{}")
 		h.log.Error(err)
+		return
+
 	}
 
 	switch metric.MType {

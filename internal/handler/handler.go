@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 
 	"net/http"
@@ -59,10 +60,10 @@ func (h *Handler) GetMethodGauge(c *gin.Context) {
 }
 
 func (h *Handler) PostMetricsList(c *gin.Context) {
-
+	fmt.Printf("111111111111111111%+v \n", c.Request.Body)
 	jsonData, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		h.log.Error(err)
+		h.log.Error("PostMetricsList", err)
 		newErrorResponse(c, http.StatusBadRequest, "{}")
 	}
 
@@ -81,16 +82,6 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		return
 	}
 
-	// if bytes.Contains(jsonData, []byte("Mtype")) {
-	// 	var newList []models.MetricsP
-
-	// 	for _, val := range list {
-	// 		m := models.MetricsP{ID: val.ID, MType: val.MType, Delta: val.Delta, Value: val.Value}
-	// 		newList = append(newList, m)
-	// 	}
-
-	// 	c.JSON(http.StatusOK, "{}")
-	// }
 	c.JSON(http.StatusOK, list)
 
 }

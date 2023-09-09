@@ -62,9 +62,8 @@ func (h *Handler) GetMethodGauge(c *gin.Context) {
 func (h *Handler) PostMetricsList(c *gin.Context) {
 	fmt.Printf("111111111111111111%+v \n", c.Request.Body)
 	jsonData, err := io.ReadAll(c.Request.Body)
-	fmt.Printf("22222222222222222%+v \n", jsonData)
+	fmt.Printf("22222222222222222%+v \n", string(jsonData))
 	if err != nil {
-		h.log.Error("333333333333333333", err)
 		h.log.Error("PostMetricsList", err)
 		newErrorResponse(c, http.StatusOK, "{}")
 	}
@@ -73,8 +72,9 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 
 	var metrics []*models.Metrics
 	if err := json.Unmarshal(jsonDatarep, &metrics); err != nil {
+		h.log.Error("333333333333333333", err)
 		h.log.Error(err)
-		newErrorResponse(c, http.StatusBadRequest, "{}")
+		newErrorResponse(c, http.StatusOK, "{}")
 	}
 
 	list, err := h.storage.UpdateMetrics(metrics)

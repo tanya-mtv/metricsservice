@@ -60,12 +60,17 @@ func (h *Handler) GetMethodGauge(c *gin.Context) {
 }
 
 func (h *Handler) PostMetricsList(c *gin.Context) {
-
+	if c.ContentType() != "application/json" {
+		h.log.Error("incorrect  ContentType")
+		newErrorResponse(c, http.StatusBadRequest, "{}")
+		return
+	}
 	jsonData, err := io.ReadAll(c.Request.Body)
 	fmt.Printf("jsonData PostMetricsList %+v \n", string(jsonData))
 	if err != nil {
 		h.log.Error("PostMetricsList", err)
 		newErrorResponse(c, http.StatusBadRequest, "{}")
+		return
 	}
 
 	jsonDatarep := bytes.Replace(jsonData, []byte("Mtype"), []byte("type"), -1)
@@ -74,6 +79,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 	if err := json.Unmarshal(jsonDatarep, &metrics); err != nil {
 		h.log.Error(err)
 		newErrorResponse(c, http.StatusBadRequest, "{}")
+		return
 	}
 
 	list, err := h.storage.UpdateMetrics(metrics)

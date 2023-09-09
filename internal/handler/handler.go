@@ -72,9 +72,6 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		return
 	}
 
-	// jsonDatarep := bytes.Replace(jsonData, []byte("Mtype"), []byte("type"), -1)
-	// fmt.Printf("After Replace jsonDatarep %+v \n", string(jsonDatarep))
-
 	var metrics []*models.Metrics
 	if err := json.Unmarshal(jsonData, &metrics); err != nil {
 		h.log.Error(err)
@@ -89,28 +86,8 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		return
 	}
 
-	// data, err := json.Marshal(&list)
-	// if err != nil {
-	// 	h.log.Debug("Cannot serialize structure")
-	// 	return
-	// }
-	// fmt.Printf("Response PostMetricsList %+v \n", string(data))
-
-	// jsonResp := bytes.Replace(data, []byte("type"), []byte("MType"), -1)
-
 	var newList []models.Metrics
 
-	// for _, value := range list {
-	// 	m := models.MetricsP{ID: value.ID, MType: value.MType, Delta: value.Delta, Value: value.Value}
-	// 	newList = append(newList, m)
-	// }
-
-	// data, err := json.Marshal(&list)
-	// if err != nil {
-	// 	h.log.Debug("Cannot serialize Response structure `list`")
-	// 	return
-	// }
-	// fmt.Printf("Response PostMetricsList %+v \n", string(data))
 	fmt.Printf("Response PostMetricsList %+v \n", list)
 	c.Writer.Header().Set("Content-Type", "application/json")
 
@@ -137,6 +114,7 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 	case "counter":
 
 		cnt, found := h.storage.GetCounter(metric.ID)
+		fmt.Println("Get cnt from storage ", cnt)
 		if !found {
 			newErrorResponse(c, http.StatusNotFound, "Metric not found")
 			return
@@ -150,7 +128,8 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 			Delta: &tmp,
 		}
 
-		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		c.Writer.Header().Set("Content-Type", "application/json")
+		fmt.Println("Send delta ", metric.ID, *metric.Delta)
 		c.JSON(http.StatusOK, metric)
 	case "gauge":
 
@@ -168,7 +147,7 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 			Value: &tmp,
 		}
 
-		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		c.Writer.Header().Set("Content-Type", "application/json")
 		c.JSON(http.StatusOK, metric)
 	default:
 		c.JSON(http.StatusBadRequest, 0)

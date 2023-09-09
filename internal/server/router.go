@@ -22,7 +22,7 @@ func (s *server) NewRouter(db *sqlx.DB) *gin.Engine {
 	router.POST("/update", h.PostMetricsUpdateJSON)
 	router.POST("/update/:metricType/:metricName/:metricValue", h.PostMetrics)
 
-	value := router.Group("/value/")
+	value := router.Group("/value")
 	{
 		value.POST("/", h.PostMetricsValueJSON)
 		value.GET("/counter/:metricName", h.GetMethodCounter)

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -73,11 +72,11 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		return
 	}
 
-	jsonDatarep := bytes.Replace(jsonData, []byte("Mtype"), []byte("type"), -1)
-	fmt.Printf("After Replace jsonDatarep %+v \n", string(jsonDatarep))
+	// jsonDatarep := bytes.Replace(jsonData, []byte("Mtype"), []byte("type"), -1)
+	// fmt.Printf("After Replace jsonDatarep %+v \n", string(jsonDatarep))
 
 	var metrics []*models.Metrics
-	if err := json.Unmarshal(jsonDatarep, &metrics); err != nil {
+	if err := json.Unmarshal(jsonData, &metrics); err != nil {
 		h.log.Error(err)
 		newErrorResponse(c, http.StatusBadRequest, "{}")
 		return
@@ -99,21 +98,21 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 
 	// jsonResp := bytes.Replace(data, []byte("type"), []byte("MType"), -1)
 
-	var newList []models.MetricsP
+	// var newList []models.MetricsP
 
-	for _, value := range list {
-		m := models.MetricsP{ID: value.ID, MType: value.MType, Delta: value.Delta, Value: value.Value}
-		newList = append(newList, m)
-	}
+	// for _, value := range list {
+	// 	m := models.MetricsP{ID: value.ID, MType: value.MType, Delta: value.Delta, Value: value.Value}
+	// 	newList = append(newList, m)
+	// }
 
-	data, err := json.Marshal(&newList)
+	data, err := json.Marshal(&list)
 	if err != nil {
-		h.log.Debug("Cannot serialize Response structure `newList`")
+		h.log.Debug("Cannot serialize Response structure `list`")
 		return
 	}
 	fmt.Printf("Response PostMetricsList %+v \n", string(data))
 
-	c.JSON(http.StatusOK, newList)
+	c.JSON(http.StatusOK, list)
 
 }
 

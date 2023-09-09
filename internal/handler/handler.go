@@ -74,6 +74,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 	}
 
 	jsonDatarep := bytes.Replace(jsonData, []byte("Mtype"), []byte("type"), -1)
+	fmt.Printf("After Replace jsonDatarep %+v \n", string(jsonDatarep))
 
 	var metrics []*models.Metrics
 	if err := json.Unmarshal(jsonDatarep, &metrics); err != nil {
@@ -104,6 +105,14 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		m := models.MetricsP{ID: value.ID, MType: value.MType, Delta: value.Delta, Value: value.Value}
 		newList = append(newList, m)
 	}
+
+	data, err := json.Marshal(&newList)
+	if err != nil {
+		h.log.Debug("Cannot serialize Response structure `newList`")
+		return
+	}
+	fmt.Printf("Response PostMetricsList %+v \n", string(data))
+
 	c.JSON(http.StatusOK, newList)
 
 }

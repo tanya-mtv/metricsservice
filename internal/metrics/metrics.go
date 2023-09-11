@@ -11,7 +11,10 @@ import (
 	"runtime"
 	"sync"
 	"sync/atomic"
+	"time"
 
+	"github.com/hashicorp/go-retryablehttp"
+	"github.com/tanya-mtv/metricsservice/internal/constants"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 
 	"github.com/tanya-mtv/metricsservice/internal/config"
@@ -49,7 +52,7 @@ type ServiceMetrics struct {
 	cfg        *config.ConfigAgent
 	collector  metricCollector
 	counter    *counter
-	httpClient *http.Client
+	httpClient *retryablehttp.Client
 	buf        bytes.Buffer
 	gzr        *gzip.Writer
 	log        logger.Logger
@@ -58,13 +61,20 @@ type ServiceMetrics struct {
 func NewServiceMetrics(collector *repository.MetricRepositoryCollector, cfg *config.ConfigAgent, log logger.Logger) *ServiceMetrics {
 	var bf bytes.Buffer
 	gz, _ := gzip.NewWriterLevel(&bf, gzip.BestSpeed)
+
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = constants.RetryMax
+	retryClient.RetryWaitMin = constants.RetryWaitMin
+	retryClient.RetryWaitMax = constants.RetryWaitMax
+	retryClient.Backoff = backoff
+
 	return &ServiceMetrics{
 		cfg:       cfg,
 		collector: collector,
 		counter: &counter{
 			num: 0,
 		},
-		httpClient: &http.Client{},
+		httpClient: retryClient,
 		gzr:        gz,
 		buf:        bf,
 		log:        log,
@@ -110,6 +120,13 @@ func (sm *ServiceMetrics) MetricsMonitor() {
 	sm.collector.SetValueGauge("RandomValue", repository.Gauge(float64(rand.Float64())))
 }
 
+func newMetric(metricName, metricsType string) *models.Metrics {
+
+	return &models.Metrics{
+		ID:    metricName,
+		MType: metricsType,
+	}
+}
 func (sm *ServiceMetrics) PostJSON(metrics []*models.Metrics, url string) (string, error) {
 
 	data, err := json.Marshal(&metrics)
@@ -125,7 +142,7 @@ func (sm *ServiceMetrics) PostJSON(metrics []*models.Metrics, url string) (strin
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
+	req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
 	if err != nil {
 		sm.log.Error(err)
 		return "", err
@@ -144,14 +161,6 @@ func (sm *ServiceMetrics) PostJSON(metrics []*models.Metrics, url string) (strin
 
 	body, err := io.ReadAll(resp.Body)
 	return string(body), err
-}
-
-func newMetric(metricName, metricsType string) *models.Metrics {
-
-	return &models.Metrics{
-		ID:    metricName,
-		MType: metricsType,
-	}
 }
 
 func (sm *ServiceMetrics) PostMessageJSON() {
@@ -217,7 +226,7 @@ func (sm *ServiceMetrics) Post(metric *models.Metrics, url string) (string, erro
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
+	req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
 	if err != nil {
 		sm.log.Error(err)
 		return "", err
@@ -270,4 +279,9 @@ func (sm *ServiceMetrics) PostMessage() {
 
 	sm.counter.nulValue()
 
+}
+
+func backoff(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
+	sleepTime := min + min*time.Duration(2*attemptNum)
+	return sleepTime
 }

@@ -8,6 +8,8 @@ import (
 	"path"
 	"time"
 
+	"github.com/tanya-mtv/metricsservice/internal/constants"
+
 	"github.com/jmoiron/sqlx"
 
 	"github.com/tanya-mtv/metricsservice/internal/repository"
@@ -40,10 +42,20 @@ func (s *server) openStorage(ctx context.Context, db *sqlx.DB) {
 }
 
 func (s *server) LoadLDataFromFile(fileName string) {
+	arrayInt := [4]time.Duration{0, constants.RetryWaitMin, constants.RetryMedium, constants.RetryWaitMax}
 
-	file, err := os.ReadFile(fileName)
-	if err != nil {
-		fmt.Println(err)
+	var file []byte
+	var err error
+
+	for _, val := range arrayInt {
+		file, err = os.ReadFile(fileName)
+		if err != nil {
+			s.log.Error(err)
+			time.Sleep(val)
+		} else {
+			break
+		}
+
 	}
 
 	data := make([]models.Metrics, 0, 29)

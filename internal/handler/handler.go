@@ -114,7 +114,7 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 	case "counter":
 
 		cnt, found := h.storage.GetCounter(metric.ID)
-		fmt.Println("Get cnt from storage ", cnt)
+
 		if !found {
 			newErrorResponse(c, http.StatusNotFound, "Metric not found")
 			return
@@ -129,7 +129,6 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 		}
 
 		c.Writer.Header().Set("Content-Type", "application/json")
-		fmt.Println("Send delta ", metric.ID, *metric.Delta)
 		c.JSON(http.StatusOK, metric)
 	case "gauge":
 

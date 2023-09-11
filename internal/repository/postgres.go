@@ -1,6 +1,9 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
@@ -131,9 +134,15 @@ func (m *DBStorage) GetCounter(metricName string) (Counter, bool) {
 	var cnt int64
 	query := "SELECT delta from metrics WHERE ID = $1"
 	err := m.db.Get(&cnt, query, metricName)
+
 	if err != nil {
-		m.log.Error("Can't get counter from DB ", metricName)
-		return 0, false
+		if errors.Is(err, sql.ErrNoRows) {
+			m.log.Error("Now rows in DB with metric name ", metricName)
+			return 0, false
+		} else {
+			m.log.Error("Can't get counter from DB ", metricName)
+			return 0, false
+		}
 	}
 	return Counter(cnt), true
 }
@@ -143,8 +152,14 @@ func (m *DBStorage) GetGauge(metricName string) (Gauge, bool) {
 	query := "SELECT value from metrics WHERE ID = $1"
 	err := m.db.Get(&gug, query, metricName)
 	if err != nil {
-		m.log.Error("Can't get Gauge from DB ", metricName)
-		return 0, false
+		if errors.Is(err, sql.ErrNoRows) {
+			m.log.Error("Now rows in DB with metric name ", metricName)
+			return 0, false
+		} else {
+			m.log.Error("Can't get Gauge from DB ", metricName)
+			return 0, false
+		}
+
 	}
 	return Gauge(gug), true
 }

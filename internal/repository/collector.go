@@ -34,10 +34,11 @@ func (m *MetricRepositoryCollector) SetValueCounter(metricName string, value Cou
 }
 
 func (m *MetricRepositoryCollector) GetAllCounter() map[string]Counter {
-	m.countersLock.RLock()
-	defer m.countersLock.RUnlock()
+	m.countersLock.Lock()
+	defer m.countersLock.Unlock()
 
-	data := m.counterData
+	// data := m.counterData
+	data := make(map[string]Counter, len(m.counterData))
 
 	for name, value := range data {
 		data[name] = value
@@ -49,9 +50,10 @@ func (m *MetricRepositoryCollector) GetAllCounter() map[string]Counter {
 }
 
 func (m *MetricRepositoryCollector) GetAllGauge() map[string]Gauge {
-	m.gaugesLock.RLock()
-	data := m.gaugeData
-	m.gaugesLock.RUnlock()
+	m.gaugesLock.Lock()
+	defer m.gaugesLock.Unlock()
+	// data := m.gaugeData
+	data := make(map[string]Gauge, len(m.counterData))
 
 	for name, value := range data {
 		data[name] = value

@@ -67,7 +67,8 @@ func (m *DBStorage) UpdateCounter(n string, v int64) Counter {
 	row := m.db.QueryRow(query, n, "counter", v, 0)
 	if err := row.Scan(&value); err != nil {
 		m.log.Error("Can not scan counter value in update function ", err)
-		return Counter(0)
+		m.log.Error("Can not scan counter value in update function delta = ", v)
+		return Counter(v)
 	}
 	return Counter(value)
 	// retrier := NewRetrier()

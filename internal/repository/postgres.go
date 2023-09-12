@@ -3,10 +3,12 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"net"
 	"time"
 
 	"github.com/tanya-mtv/metricsservice/internal/constants"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
@@ -97,10 +99,27 @@ func (m *DBStorage) UpdateGauge(n string, v float64) Gauge {
 	var value float64
 
 	query := "INSERT INTO metrics as m (id, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (id)  DO UPDATE SET value =  EXCLUDED.value returning value"
-	row := m.db.QueryRow(query, n, "gauge", 0, v)
-	if err := row.Scan(&value); err != nil {
-		m.log.Error("Can not scan counter value in update function ", err)
-		return 0
+	// row := m.db.QueryRow(query, n, "gauge", 0, v)
+	// if err := row.Scan(&value); err != nil {
+	// 	m.log.Error("Can not scan counter value in update function ", err)
+	// 	return 0
+	// }
+
+	retrier := NewRetrier()
+	for _, val := range retrier.retries {
+		needsR := m.db.Ping()
+
+		if haveToRetry(needsR) {
+			time.Sleep(val)
+		} else {
+
+			row := m.db.QueryRow(query, n, "gauge", 0, v)
+			if err := row.Scan(&value); err != nil {
+				m.log.Error("Can not scan counter value in update function ", err)
+				return Gauge(v)
+			}
+			return Gauge(value)
+		}
 	}
 
 	return Gauge(v)
@@ -204,15 +223,15 @@ func NewRetrier() Retrier {
 	}
 }
 
-// func haveToRetry(err error) bool {
-// 	var pge *pgconn.PgError
-// 	var nete *net.OpError
+func haveToRetry(err error) bool {
+	var pge *pgconn.PgError
+	var nete *net.OpError
 
-// 	if errors.As(err, &pge) {
-// 		return true
-// 	}
-// 	if errors.Is(err, nete) {
-// 		return true
-// 	}
-// 	return false
-// }
+	if errors.As(err, &pge) {
+		return true
+	}
+	if errors.Is(err, nete) {
+		return true
+	}
+	return false
+}

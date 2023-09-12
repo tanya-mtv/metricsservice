@@ -40,7 +40,7 @@ func NewPostgresDB(dsn string) (*sqlx.DB, error) {
 		return nil, err
 	}
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS metrics (ID char(30) UNIQUE, mtype char(30),  delta integer, value double precision);")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS metrics (ID char(30) UNIQUE, mtype char(30),  delta bigint, value double precision);")
 
 	if err != nil {
 		return db, err

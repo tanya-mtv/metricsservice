@@ -65,7 +65,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		return
 	}
 	jsonData, err := io.ReadAll(c.Request.Body)
-	fmt.Printf("jsonData PostMetricsList %+v \n", string(jsonData))
+	fmt.Printf("UPDATES PostMetricsList %+v \n", string(jsonData))
 	if err != nil {
 		h.log.Error("PostMetricsList", err)
 		newErrorResponse(c, http.StatusBadRequest, "{}")
@@ -104,6 +104,7 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 	var metric models.Metrics
 
 	jsonData, _ := io.ReadAll(c.Request.Body)
+	fmt.Println("PostMetricsValueJSON data", string(jsonData))
 	if err := json.Unmarshal(jsonData, &metric); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, "{}")
 		h.log.Error(err)
@@ -194,6 +195,8 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 	var metric models.Metrics
 
 	jsonData, _ := io.ReadAll(c.Request.Body)
+
+	fmt.Println("PostMetricsUpdateJSON data ", string(jsonData))
 	if err := json.Unmarshal(jsonData, &metric); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, "{}")
 		h.log.Error(err)
@@ -213,7 +216,7 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 
 		metric.Delta = &cnt
 
-		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		c.Writer.Header().Set("Content-Type", "application")
 		c.JSON(http.StatusOK, metric)
 	case "gauge":
 		if metric.Value == nil {
@@ -226,7 +229,7 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 		h.log.Info("Update gauge data with value ", gug)
 		metric.Value = &gug
 
-		c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		c.Writer.Header().Set("Content-Type", "application")
 		c.JSON(http.StatusOK, metric)
 	default:
 		c.JSON(http.StatusBadRequest, 0)

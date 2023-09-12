@@ -40,7 +40,7 @@ func (m *MetricRepositoryCollector) GetAllCounter() map[string]Counter {
 	// data := m.counterData
 	data := make(map[string]Counter, len(m.counterData))
 
-	for name, value := range data {
+	for name, value := range m.counterData {
 		data[name] = value
 	}
 
@@ -53,9 +53,9 @@ func (m *MetricRepositoryCollector) GetAllGauge() map[string]Gauge {
 	m.gaugesLock.Lock()
 	defer m.gaugesLock.Unlock()
 	// data := m.gaugeData
-	data := make(map[string]Gauge, len(m.counterData))
+	data := make(map[string]Gauge, len(m.gaugeData))
 
-	for name, value := range data {
+	for name, value := range m.gaugeData {
 		data[name] = value
 	}
 	return data

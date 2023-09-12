@@ -3,7 +3,13 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"net"
+	"time"
 
+	"github.com/tanya-mtv/metricsservice/internal/constants"
+
+	"github.com/jackc/pgx/v5/pgconn"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
@@ -57,61 +63,38 @@ func NewDBStorage(db *sqlx.DB, log logger.Logger) *DBStorage {
 }
 
 func (m *DBStorage) UpdateCounter(n string, v int64) Counter {
+	var value int64
+	retrier := NewRetrier()
+	query := "INSERT INTO metrics as m (id, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (id)  DO UPDATE SET delta = (m.delta + EXCLUDED.delta) returning delta"
 
-	var id string
-	var delta int64
-	query := "SELECT id, delta from metrics WHERE ID = $1"
-	row := m.db.QueryRow(query, n)
+	for _, val := range retrier.retries {
+		needsR := m.db.Ping()
 
-	row.Scan(&id, &delta)
-
-	if id == "" {
-		query = "INSERT INTO metrics (id, mtype, delta, value) values ($1, $2, $3, $4) returning delta"
-		row = m.db.QueryRow(query, n, "counter", v, 0)
-		if err := row.Scan(&delta); err != nil {
-			return 0
+		if haveToRetry(needsR) {
+			time.Sleep(val)
 		} else {
-			return Counter(v)
+			row := m.db.QueryRow(query, n, "counter", v, 0)
+			if err := row.Scan(&value); err != nil {
+				m.log.Error("Can not scan counter value in update function ", err)
+				return Counter(0)
+			}
+			return Counter(value)
 		}
 	}
 
-	newValue := v + delta
+	return Counter(0)
 
-	query = "UPDATE metrics set delta = $1 WHERE id = $2"
-	_, err := m.db.Exec(query, newValue, n)
-
-	if err != nil {
-		m.log.Error("Can't update data from DB with metric ", n)
-		return Counter(v)
-	}
-
-	return Counter(newValue)
 }
 
 func (m *DBStorage) UpdateGauge(n string, v float64) Gauge {
-	var id string
+
 	var value float64
-	query := "SELECT id, value from metrics WHERE ID = $1"
-	row := m.db.QueryRow(query, n)
 
-	row.Scan(&id, &value)
-
-	if id == "" {
-		query = "INSERT INTO metrics (id, mtype, delta, value) values ($1, $2, $3, $4) returning value"
-		row = m.db.QueryRow(query, n, "gauge", 0, v)
-		if err := row.Scan(&value); err != nil {
-			return 0
-		} else {
-			return Gauge(v)
-		}
-	}
-
-	query = "UPDATE metrics set value = $1 WHERE id = $2"
-	_, err := m.db.Exec(query, v, n)
-
-	if err != nil {
-		m.log.Error("Can't update data from DB with metric ", n)
-		return Gauge(v)
+	query := "INSERT INTO metrics as m (id, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (id)  DO UPDATE SET value =  EXCLUDED.value returning value"
+	row := m.db.QueryRow(query, n, "gauge", 0, v)
+	if err := row.Scan(&value); err != nil {
+		m.log.Error("Can not scan counter value in update function ", err)
+		return 0
 	}
 
 	return Gauge(v)
@@ -203,4 +186,27 @@ func (m *DBStorage) UpdateMetrics(metrics []*models.Metrics) ([]*models.Metrics,
 	tx.Commit()
 
 	return metrics, nil
+}
+
+type Retrier struct {
+	retries []time.Duration
+}
+
+func NewRetrier() Retrier {
+	return Retrier{
+		retries: []time.Duration{0, constants.RetryWaitMin, constants.RetryMedium, constants.RetryWaitMax},
+	}
+}
+
+func haveToRetry(err error) bool {
+	var pge *pgconn.PgError
+	var nete *net.OpError
+
+	if errors.As(err, &pge) {
+		return true
+	}
+	if errors.Is(err, nete) {
+		return true
+	}
+	return false
 }

@@ -277,7 +277,6 @@ func (sm *ServiceMetrics) PostMessage() {
 			sm.log.Info(err)
 		}
 	}
-
 	sm.counter.nulValue()
 
 }

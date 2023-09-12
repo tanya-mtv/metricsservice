@@ -3,12 +3,10 @@ package repository
 import (
 	"database/sql"
 	"errors"
-	"net"
 	"time"
 
 	"github.com/tanya-mtv/metricsservice/internal/constants"
 
-	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
@@ -64,25 +62,32 @@ func NewDBStorage(db *sqlx.DB, log logger.Logger) *DBStorage {
 
 func (m *DBStorage) UpdateCounter(n string, v int64) Counter {
 	var value int64
-	retrier := NewRetrier()
+
 	query := "INSERT INTO metrics as m (id, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (id)  DO UPDATE SET delta = (m.delta + EXCLUDED.delta) returning delta"
-
-	for _, val := range retrier.retries {
-		needsR := m.db.Ping()
-
-		if haveToRetry(needsR) {
-			time.Sleep(val)
-		} else {
-			row := m.db.QueryRow(query, n, "counter", v, 0)
-			if err := row.Scan(&value); err != nil {
-				m.log.Error("Can not scan counter value in update function ", err)
-				return Counter(0)
-			}
-			return Counter(value)
-		}
+	row := m.db.QueryRow(query, n, "counter", v, 0)
+	if err := row.Scan(&value); err != nil {
+		m.log.Error("Can not scan counter value in update function ", err)
+		return Counter(0)
 	}
+	return Counter(value)
+	// retrier := NewRetrier()
+	// for _, val := range retrier.retries {
+	// 	needsR := m.db.Ping()
 
-	return Counter(0)
+	// 	if haveToRetry(needsR) {
+	// 		time.Sleep(val)
+	// 	} else {
+
+	// 		row := m.db.QueryRow(query, n, "counter", v, 0)
+	// 		if err := row.Scan(&value); err != nil {
+	// 			m.log.Error("Can not scan counter value in update function ", err)
+	// 			return Counter(0)
+	// 		}
+	// 		return Counter(value)
+	// 	}
+	// }
+
+	// return Counter(0)
 
 }
 
@@ -198,15 +203,15 @@ func NewRetrier() Retrier {
 	}
 }
 
-func haveToRetry(err error) bool {
-	var pge *pgconn.PgError
-	var nete *net.OpError
+// func haveToRetry(err error) bool {
+// 	var pge *pgconn.PgError
+// 	var nete *net.OpError
 
-	if errors.As(err, &pge) {
-		return true
-	}
-	if errors.Is(err, nete) {
-		return true
-	}
-	return false
-}
+// 	if errors.As(err, &pge) {
+// 		return true
+// 	}
+// 	if errors.Is(err, nete) {
+// 		return true
+// 	}
+// 	return false
+// }

@@ -48,11 +48,11 @@ func TestServiceMetrics_Post(t *testing.T) {
 
 	var tests = []struct {
 		nameTest     string
-		body         []*models.Metrics
+		body         []models.Metrics
 		expectedBody string
 	}{
-		{"Post method gauge", []*models.Metrics{metric1}, ""},
-		{"Post method counter", []*models.Metrics{metric2}, ""},
+		{"Post method gauge", []models.Metrics{*metric1}, ""},
+		{"Post method counter", []models.Metrics{*metric2}, ""},
 	}
 
 	for _, tt := range tests {

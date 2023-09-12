@@ -173,7 +173,7 @@ func (sm *ServiceMetrics) PostMessageJSON() {
 		data.Value = &tmp
 
 		listMetrics = append(listMetrics, *data)
-		// fmt.Printf("listMetrics %+v\n", listMetrics[0], *listMetrics[0].Value)
+
 		fmt.Printf("listMetrics %+v\n", data)
 
 	}
@@ -190,7 +190,6 @@ func (sm *ServiceMetrics) PostMessageJSON() {
 	}
 
 	if len(listMetrics) > 0 {
-		fmt.Printf("listMetrics %+v\n", listMetrics[0])
 		_, err := sm.PostJSON(listMetrics, addr)
 		if err != nil {
 			sm.log.Info(err)
@@ -264,7 +263,6 @@ func (sm *ServiceMetrics) PostMessage() {
 		if err != nil {
 			sm.log.Info(err)
 		}
-
 	}
 
 	for name, value := range sm.collector.GetAllCounter() {
@@ -278,7 +276,6 @@ func (sm *ServiceMetrics) PostMessage() {
 		if err != nil {
 			sm.log.Info(err)
 		}
-
 	}
 
 	sm.counter.nulValue()

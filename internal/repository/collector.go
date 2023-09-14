@@ -70,15 +70,15 @@ func (m *MetricRepositoryCollector) GetAllMetrics() []models.Metrics {
 	// }
 	tmp := float64(55200)
 	listMetrics = append(listMetrics, models.Metrics{ID: "MSpanInuse", MType: "gauge", Value: &tmp})
-	tmp = float64(163840)
-	listMetrics = append(listMetrics, models.Metrics{ID: "StackSys", MType: "gauge", Value: &tmp})
-	tmp = float64(1950312)
-	listMetrics = append(listMetrics, models.Metrics{ID: "Alloc", MType: "gauge", Value: &tmp})
+	// tmp = float64(163840)
+	// listMetrics = append(listMetrics, models.Metrics{ID: "StackSys", MType: "gauge", Value: &tmp})
+	// tmp = float64(1950312)
+	// listMetrics = append(listMetrics, models.Metrics{ID: "Alloc", MType: "gauge", Value: &tmp})
 
-	for name, value := range m.counterData {
-		tmp := int64(value)
-		listMetrics = append(listMetrics, models.Metrics{ID: name, MType: "counter", Delta: &tmp})
-	}
+	// for name, value := range m.counterData {
+	// 	tmp := int64(value)
+	// 	listMetrics = append(listMetrics, models.Metrics{ID: name, MType: "counter", Delta: &tmp})
+	// }
 
 	return listMetrics
 }

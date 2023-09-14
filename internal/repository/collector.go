@@ -43,14 +43,38 @@ func (m *MetricRepositoryCollector) GetAllCounter() map[string]Counter {
 	return data
 }
 
-// func (m *MetricRepositoryCollector) GetAllGauge() map[string]Gauge {
+func (m *MetricRepositoryCollector) GetAllGauge() map[string]Gauge {
+	// m.lock.Lock()
+	// defer m.lock.Unlock()
+
+	data := make(map[string]Gauge, len(m.gaugeData))
+
+	for name, value := range m.gaugeData {
+		data[name] = value
+	}
+	return data
+}
+
+// func (m *MetricRepositoryCollector) GetAllMetrics() []models.Metrics {
+// 	listMetrics := make([]models.Metrics, 0, 29)
 // 	// m.lock.Lock()
 // 	// defer m.lock.Unlock()
 
-// 	data := make(map[string]Gauge, len(m.gaugeData))
+// 	// for name, value := range m.gaugeData {
+// 	// 	tmp := float64(value)
+// 	// 	listMetrics = append(listMetrics, models.Metrics{ID: name, MType: "gauge", Value: &tmp})
+// 	// }
+// 	tmp := float64(55200)
+// 	listMetrics = append(listMetrics, models.Metrics{ID: "MSpanInuse", MType: "gauge", Value: &tmp})
+// 	tmp = float64(163840)
+// 	listMetrics = append(listMetrics, models.Metrics{ID: "StackSys", MType: "gauge", Value: &tmp})
+// 	// tmp = float64(1950312)
+// 	// listMetrics = append(listMetrics, models.Metrics{ID: "Alloc", MType: "gauge", Value: &tmp})
 
-// 	for name, value := range m.gaugeData {
-// 		data[name] = value
-// 	}
-// 	return data
+// 	// for name, value := range m.counterData {
+// 	// 	tmp := int64(value)
+// 	// 	listMetrics = append(listMetrics, models.Metrics{ID: name, MType: "counter", Delta: &tmp})
+// 	// }
+
+// 	return listMetrics
 // }

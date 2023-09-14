@@ -178,7 +178,6 @@ func (sm *ServiceMetrics) PostMessageJSON() {
 
 		fmt.Printf("listMetrics %+v\n", data)
 
-		break
 	}
 
 	for name, value := range sm.collector.GetAllCounter() {

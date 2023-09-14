@@ -90,7 +90,7 @@ func (m *DBStorage) UpdateGauge(n string, v float64) Gauge {
 
 func (m *DBStorage) GetAll() []models.Metrics {
 	metricsSlice := make([]models.Metrics, 0, 29)
-	query := "SELECT name, mtype, delta, value from metrics"
+	query := "SELECT  name id, mtype, delta, value from metrics"
 
 	err := m.db.Select(&metricsSlice, query)
 	if err != nil {

@@ -47,8 +47,8 @@ func (m *MetricRepositoryCollector) GetAllCounter() map[string]Counter {
 }
 
 func (m *MetricRepositoryCollector) GetAllGauge() map[string]Gauge {
-	m.gaugesLock.Lock()
-	defer m.gaugesLock.Unlock()
+	// m.gaugesLock.Lock()
+	// defer m.gaugesLock.Unlock()
 
 	data := make(map[string]Gauge, len(m.gaugeData))
 

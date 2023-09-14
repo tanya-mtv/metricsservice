@@ -167,16 +167,16 @@ func (sm *ServiceMetrics) PostMessageJSON() {
 	listMetrics := make([]models.Metrics, 0, 29)
 	addr := fmt.Sprintf("http://%s/updates/", sm.cfg.Port)
 
-	for name, value := range sm.collector.GetAllGauge() {
-		data := newMetric(name, "gauge")
-		tmp := float64(value)
-		data.Value = &tmp
+	// for name, value := range sm.collector.GetAllGauge() {
+	// 	data := newMetric(name, "gauge")
+	// 	tmp := float64(value)
+	// 	data.Value = &tmp
 
-		listMetrics = append(listMetrics, *data)
+	// 	listMetrics = append(listMetrics, *data)
 
-		fmt.Printf("listMetrics %+v\n", data)
+	// 	fmt.Printf("listMetrics %+v\n", data)
 
-	}
+	// }
 
 	for name, value := range sm.collector.GetAllCounter() {
 

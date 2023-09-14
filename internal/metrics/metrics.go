@@ -135,21 +135,23 @@ func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string
 		return "", err
 	}
 
-	err = sm.Compression(data)
+	// err = sm.Compression(data)
 
-	if err != nil {
-		sm.log.Info(err)
-		return "", err
-	}
+	// if err != nil {
+	// 	sm.log.Info(err)
+	// 	return "", err
+	// }
 
-	req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
+	// req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
+
+	req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(data))
 	if err != nil {
 		sm.log.Error(err)
 		return "", err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Content-Encoding", "gzip")
+	// req.Header.Set("Content-Encoding", "gzip")
 	req.Header.Set("Accept-Encoding", "identity")
 	resp, err := sm.httpClient.Do(req)
 
@@ -164,32 +166,32 @@ func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string
 }
 
 func (sm *ServiceMetrics) PostMessageJSON() {
-	listMetrics := sm.collector.GetAllMetrics()
-
-	// listMetrics := make([]models.Metrics, 0, 29)
 	addr := fmt.Sprintf("http://%s/updates/", sm.cfg.Port)
+	// listMetrics := sm.collector.GetAllMetrics()
 
-	// for name, value := range sm.collector.GetAllGauge() {
-	// 	data := newMetric(name, "gauge")
-	// 	tmp := float64(value)
-	// 	data.Value = &tmp
+	listMetrics := make([]models.Metrics, 0, 29)
 
-	// 	listMetrics = append(listMetrics, *data)
+	for name, value := range sm.collector.GetAllGauge() {
+		data := newMetric(name, "gauge")
+		tmp := float64(value)
+		data.Value = &tmp
 
-	// 	fmt.Printf("listMetrics %+v\n", data)
+		listMetrics = append(listMetrics, *data)
 
-	// }
+		fmt.Printf("listMetrics %+v\n", data)
 
-	// for name, value := range sm.collector.GetAllCounter() {
+	}
 
-	// 	data := newMetric(name, "counter")
+	for name, value := range sm.collector.GetAllCounter() {
 
-	// 	tmp := int64(value)
-	// 	data.Delta = &tmp
+		data := newMetric(name, "counter")
 
-	// 	listMetrics = append(listMetrics, *data)
+		tmp := int64(value)
+		data.Delta = &tmp
 
-	// }
+		listMetrics = append(listMetrics, *data)
+
+	}
 
 	if len(listMetrics) > 0 {
 		_, err := sm.PostJSON(listMetrics, addr)

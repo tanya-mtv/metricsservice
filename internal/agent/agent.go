@@ -27,8 +27,8 @@ func NewAgent(cfg *config.ConfigAgent, log logger.Logger) *agent {
 }
 
 func (a *agent) Run() error {
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-	defer cancel()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
 	collector := repository.NewMetricRepositoryCollector()
 	a.metrics = metrics.NewServiceMetrics(collector, a.cfg, a.log)
 
@@ -45,8 +45,8 @@ func (a *agent) Run() error {
 		case <-pollIntervalTicker.C:
 			a.metrics.MetricsMonitor()
 		case <-reportIntervalTicker.C:
-			a.metrics.PostMessage()
-			// a.metrics.PostMessageJSON()
+			// a.metrics.PostMessage()
+			a.metrics.PostMessageJSON()
 		}
 	}
 

@@ -40,8 +40,8 @@ func NewServer(cfg *config.ConfigServer, log logger.Logger) *server {
 }
 
 func (s *server) Run() error {
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-	defer cancel()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
 
 	if s.cfg.DSN != "" {
 		db, err := repository.NewPostgresDB(s.cfg.DSN)
@@ -68,5 +68,6 @@ func (s *server) Run() error {
 	}()
 
 	<-ctx.Done()
+	stop()
 	return nil
 }

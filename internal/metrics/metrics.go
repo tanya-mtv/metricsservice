@@ -135,7 +135,6 @@ func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string
 		return "", err
 	}
 
-	fmt.Println("11111111111", string(data))
 	err = sm.Compression(data)
 
 	if err != nil {

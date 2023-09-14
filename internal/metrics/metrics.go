@@ -181,16 +181,16 @@ func (sm *ServiceMetrics) PostMessageJSON() {
 		break
 	}
 
-	// for name, value := range sm.collector.GetAllCounter() {
+	for name, value := range sm.collector.GetAllCounter() {
 
-	// 	data := newMetric(name, "counter")
+		data := newMetric(name, "counter")
 
-	// 	tmp := int64(value)
-	// 	data.Delta = &tmp
+		tmp := int64(value)
+		data.Delta = &tmp
 
-	// 	listMetrics = append(listMetrics, *data)
+		listMetrics = append(listMetrics, *data)
 
-	// }
+	}
 
 	if len(listMetrics) > 0 {
 		_, err := sm.PostJSON(listMetrics, addr)

@@ -43,17 +43,21 @@ func (s *server) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	db, err := repository.NewPostgresDB(s.cfg.DSN)
+	if s.cfg.DSN != "" {
+		db, err := repository.NewPostgresDB(s.cfg.DSN)
 
-	if err != nil {
-		s.log.Info("Failed to initialaze db: %s", err.Error())
+		if err != nil {
+			s.log.Info("Failed to initialaze db: %s", err.Error())
+		} else {
+			s.log.Info("Success connection to db")
+			defer db.Close()
+		}
+		s.openStorage(ctx, db)
+		s.router = s.NewRouter(db)
 	} else {
-		s.log.Info("Success connection to db")
-		defer db.Close()
+		s.openStorage(ctx, nil)
+		s.router = s.NewRouter(nil)
 	}
-	s.openStorage(ctx, db)
-
-	s.router = s.NewRouter(db)
 
 	go func() {
 		s.log.Info("Connect listening on port: %s", s.cfg.Port)

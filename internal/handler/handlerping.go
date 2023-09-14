@@ -19,9 +19,8 @@ func NewHandlerPing(db *sqlx.DB) *HandlerPing {
 
 func (h *HandlerPing) Ping(c *gin.Context) {
 	c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	var ptr *sqlx.DB
 
-	if ptr == h.db {
+	if h.db == nil {
 		newErrorResponse(c, http.StatusInternalServerError, "Can't connect to database")
 		return
 	}

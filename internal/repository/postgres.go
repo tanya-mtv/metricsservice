@@ -56,7 +56,6 @@ func (m *DBStorage) UpdateCounter(n string, v int64) Counter {
 	row := m.db.QueryRow(query, n, "counter", v, 0)
 	if err := row.Scan(&value); err != nil {
 		m.log.Error("Can not scan counter value in update function ", err)
-		m.log.Error("Can not scan counter value in update function delta = ", v)
 		return Counter(v)
 	}
 	return Counter(value)
@@ -71,9 +70,9 @@ func (m *DBStorage) UpdateGauge(n string, v float64) Gauge {
 
 	retrier := NewRetrier()
 	for _, val := range retrier.retries {
-		needsR := m.db.Ping()
-
-		if haveToRetry(needsR) {
+		err := m.db.Ping()
+		//check type of err
+		if haveToRetry(err) {
 			time.Sleep(val)
 		} else {
 

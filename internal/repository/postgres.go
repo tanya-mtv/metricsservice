@@ -52,24 +52,31 @@ func NewDBStorage(db *sqlx.DB, log logger.Logger) *DBStorage {
 func (m *DBStorage) UpdateCounter(n string, v int64) Counter {
 	var value int64
 
-	query := "INSERT INTO metrics as m (name, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (name)  DO UPDATE SET delta = (m.delta + EXCLUDED.delta) returning delta"
-	retrier := NewRetrier()
-	for _, val := range retrier.retries {
-		err := m.db.Ping()
-		//check type of err
-		if haveToRetry(err) {
-			time.Sleep(val)
-		} else {
-			row := m.db.QueryRow(query, n, "counter", v, 0)
-			if err := row.Scan(&value); err != nil {
-				m.log.Error("Can not scan counter value in update function ", err)
-				return Counter(v)
-			}
-			return Counter(v)
-		}
-	}
+	// query := "INSERT INTO metrics as m (name, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (name)  DO UPDATE SET delta = (m.delta + EXCLUDED.delta) returning delta"
+	// retrier := NewRetrier()
+	// for _, val := range retrier.retries {
+	// 	err := m.db.Ping()
+	// 	//check type of err
+	// 	if haveToRetry(err) {
+	// 		time.Sleep(val)
+	// 	} else {
+	// 		row := m.db.QueryRow(query, n, "counter", v, 0)
+	// 		if err := row.Scan(&value); err != nil {
+	// 			m.log.Error("Can not scan counter value in update function ", err)
+	// 			return Counter(v)
+	// 		}
+	// 		return Counter(v)
+	// 	}
+	// }
 
-	return Counter(value)
+	// return Counter(value)
+
+	row := m.db.QueryRow(query, n, "counter", v, 0)
+	if err := row.Scan(&value); err != nil {
+		m.log.Error("Can not scan counter value in update function ", err)
+		return Counter(v)
+	}
+	return Counter(v)
 
 }
 
@@ -86,7 +93,6 @@ func (m *DBStorage) UpdateGauge(n string, v float64) Gauge {
 		if haveToRetry(err) {
 			time.Sleep(val)
 		} else {
-
 			row := m.db.QueryRow(query, n, "gauge", 0, v)
 			if err := row.Scan(&value); err != nil {
 				m.log.Error("Can not scan counter value in update function ", err)

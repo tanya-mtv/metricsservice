@@ -1,13 +1,15 @@
 package repository
 
 import (
+	"sync"
+
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
 
 type MetricRepositoryCollector struct {
 	gaugeData   map[string]Gauge
 	counterData map[string]Counter
-	// lock        sync.Mutex
+	lock        sync.Mutex
 	// countersLock sync.RWMutex
 	// gaugesLock   sync.RWMutex
 }
@@ -60,13 +62,13 @@ func (m *MetricRepositoryCollector) GetAllGauge() map[string]Gauge {
 }
 
 func (m *MetricRepositoryCollector) GetAllMetricsList() []models.Metrics {
-	// m.lock.Lock()
-	// defer m.lock.Unlock()
+	m.lock.Lock()
+	defer m.lock.Unlock()
 
 	var listmetrics []models.Metrics
 	for name, value := range m.gaugeData {
 		tmp := float64(value)
-		listmetrics = append(listmetrics, models.Metrics{ID: name, MType: "gauge", Value: &tmp})
+		listmetrics = append(listmetrics, models.Metrics{ID: name, MType: "godge", Value: &tmp})
 
 	}
 

@@ -53,11 +53,21 @@ func (m *DBStorage) UpdateCounter(n string, v int64) Counter {
 	var value int64
 
 	query := "INSERT INTO metrics as m (name, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (name)  DO UPDATE SET delta = (m.delta + EXCLUDED.delta) returning delta"
-	row := m.db.QueryRow(query, n, "counter", v, 0)
-	if err := row.Scan(&value); err != nil {
-		m.log.Error("Can not scan counter value in update function ", err)
-		return Counter(v)
+	retrier := NewRetrier()
+	for _, val := range retrier.retries {
+		err := m.db.Ping()
+		//check type of err
+		if haveToRetry(err) {
+			time.Sleep(val)
+		} else {
+			row := m.db.QueryRow(query, n, "counter", v, 0)
+			if err := row.Scan(&value); err != nil {
+				m.log.Error("Can not scan counter value in update function ", err)
+				return Counter(v)
+			}
+		}
 	}
+
 	return Counter(value)
 
 }
@@ -92,10 +102,22 @@ func (m *DBStorage) GetAll() []models.Metrics {
 	metricsSlice := make([]models.Metrics, 0, 29)
 	query := "SELECT  name id, mtype, delta, value from metrics"
 
-	err := m.db.Select(&metricsSlice, query)
-	if err != nil {
-		m.log.Error("Can't get all metric ")
-		return metricsSlice
+	retrier := NewRetrier()
+	for _, val := range retrier.retries {
+		err := m.db.Ping()
+		//check type of err
+		if haveToRetry(err) {
+			time.Sleep(val)
+		} else {
+
+			err := m.db.Select(&metricsSlice, query)
+			if err != nil {
+				m.log.Error("Can't get all metric ")
+				return metricsSlice
+			}
+
+			return metricsSlice
+		}
 	}
 
 	return metricsSlice

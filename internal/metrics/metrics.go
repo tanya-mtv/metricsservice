@@ -130,6 +130,7 @@ func newMetric(metricName, metricsType string) *models.Metrics {
 func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string, error) {
 
 	data, err := json.Marshal(&metrics)
+	bytes.Replace(data, []byte("godge"), []byte("gauge"), -1)
 	if err != nil {
 		sm.log.Debug("Can't post message")
 		return "", err
@@ -168,7 +169,6 @@ func (sm *ServiceMetrics) PostMessageJSON() {
 	addr := fmt.Sprintf("http://%s/updates/", sm.cfg.Port)
 	listMetrics := sm.collector.GetAllMetricsList()
 
-	fmt.Println("22222222222222222222222", listMetrics[0].ID, *listMetrics[0].Value)
 	if len(listMetrics) > 0 {
 		_, err := sm.PostJSON(listMetrics, addr)
 		if err != nil {

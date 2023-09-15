@@ -69,7 +69,7 @@ func (m *MetricRepositoryCollector) GetAllMetricsList() []models.Metrics {
 		k += 1
 		tmp := float64(value)
 		listmetrics = append(listmetrics, models.Metrics{ID: name, MType: "gauge", Value: &tmp})
-		if k == 1 {
+		if k == 3 {
 			break
 		}
 

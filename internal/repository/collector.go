@@ -7,11 +7,10 @@ import (
 )
 
 type MetricRepositoryCollector struct {
-	gaugeData   map[string]Gauge
-	counterData map[string]Counter
-	lock        sync.Mutex
-	// countersLock sync.RWMutex
-	// gaugesLock   sync.RWMutex
+	gaugeData    map[string]Gauge
+	counterData  map[string]Counter
+	countersLock sync.RWMutex
+	gaugesLock   sync.RWMutex
 }
 
 func NewMetricRepositoryCollector() *MetricRepositoryCollector {
@@ -23,22 +22,22 @@ func NewMetricRepositoryCollector() *MetricRepositoryCollector {
 }
 
 func (m *MetricRepositoryCollector) SetValueGauge(metricName string, value Gauge) {
-	// m.lock.Lock()
-	// defer m.lock.Unlock()
+	m.gaugesLock.Lock()
+	defer m.gaugesLock.Unlock()
 
 	m.gaugeData[metricName] = value
 }
 
 func (m *MetricRepositoryCollector) SetValueCounter(metricName string, value Counter) {
-	// m.lock.Lock()
-	// defer m.lock.Unlock()
+	m.countersLock.Lock()
+	defer m.countersLock.Unlock()
 
 	m.counterData[metricName] = value
 }
 
 func (m *MetricRepositoryCollector) GetAllCounter() map[string]Counter {
-	// m.lock.Lock()
-	// defer m.lock.Unlock()
+	m.countersLock.RLock()
+	defer m.countersLock.RUnlock()
 
 	data := make(map[string]Counter, len(m.counterData))
 
@@ -50,8 +49,8 @@ func (m *MetricRepositoryCollector) GetAllCounter() map[string]Counter {
 }
 
 func (m *MetricRepositoryCollector) GetAllGauge() map[string]Gauge {
-	// m.lock.Lock()
-	// defer m.lock.Unlock()
+	m.gaugesLock.RLock()
+	defer m.gaugesLock.Unlock()
 
 	data := make(map[string]Gauge, len(m.gaugeData))
 
@@ -62,8 +61,8 @@ func (m *MetricRepositoryCollector) GetAllGauge() map[string]Gauge {
 }
 
 func (m *MetricRepositoryCollector) GetAllMetricsList() []models.Metrics {
-	m.lock.Lock()
-	defer m.lock.Unlock()
+	m.gaugesLock.RLock()
+	defer m.gaugesLock.RUnlock()
 
 	var listmetrics []models.Metrics
 	for name, value := range m.gaugeData {
@@ -71,6 +70,9 @@ func (m *MetricRepositoryCollector) GetAllMetricsList() []models.Metrics {
 		listmetrics = append(listmetrics, models.Metrics{ID: name, MType: "godge", Value: &tmp})
 
 	}
+
+	m.countersLock.RLock()
+	defer m.countersLock.RUnlock()
 
 	for name, value := range m.counterData {
 		tmp := int64(value)

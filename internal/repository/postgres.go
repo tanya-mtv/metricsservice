@@ -65,6 +65,7 @@ func (m *DBStorage) UpdateCounter(n string, v int64) Counter {
 				m.log.Error("Can not scan counter value in update function ", err)
 				return Counter(v)
 			}
+			return Counter(v)
 		}
 	}
 

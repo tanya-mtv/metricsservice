@@ -167,28 +167,8 @@ func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string
 func (sm *ServiceMetrics) PostMessageJSON() {
 	addr := fmt.Sprintf("http://%s/updates/", sm.cfg.Port)
 	listMetrics := sm.collector.GetAllMetricsList()
-	// listMetrics := make([]models.Metrics, 0, 29)
 
-	// for name, value := range sm.collector.GetAllGauge() {
-	// 	data := newMetric(name, "gauge")
-	// 	tmp := float64(value)
-	// 	data.Value = &tmp
-
-	// 	listMetrics = append(listMetrics, *data)
-
-	// }
-
-	// for name, value := range sm.collector.GetAllCounter() {
-
-	// 	data := newMetric(name, "counter")
-
-	// 	tmp := int64(value)
-	// 	data.Delta = &tmp
-
-	// 	listMetrics = append(listMetrics, *data)
-
-	// }
-
+	fmt.Println("22222222222222222222222", listMetrics[0].ID, *listMetrics[0].Value)
 	if len(listMetrics) > 0 {
 		_, err := sm.PostJSON(listMetrics, addr)
 		if err != nil {

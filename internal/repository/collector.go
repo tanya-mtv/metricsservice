@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
 
@@ -55,7 +53,6 @@ func (m *MetricRepositoryCollector) GetAllGauge() map[string]Gauge {
 
 	data := make(map[string]Gauge, len(m.gaugeData))
 
-	fmt.Println("22222222222222222222", len(m.gaugeData))
 	for name, value := range m.gaugeData {
 		data[name] = value
 	}
@@ -69,7 +66,7 @@ func (m *MetricRepositoryCollector) GetAllMetricsList() []models.Metrics {
 	var listmetrics []models.Metrics
 	for name, value := range m.gaugeData {
 		tmp := float64(value)
-		listmetrics = append(listmetrics, models.Metrics{ID: name, MType: "godge", Value: &tmp})
+		listmetrics = append(listmetrics, models.Metrics{ID: name, MType: "gauge", Value: &tmp})
 
 	}
 

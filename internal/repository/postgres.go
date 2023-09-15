@@ -70,7 +70,7 @@ func (m *DBStorage) UpdateCounter(n string, v int64) Counter {
 	// }
 
 	// return Counter(value)
-
+	query := "INSERT INTO metrics as m (name, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (name)  DO UPDATE SET delta = (m.delta + EXCLUDED.delta) returning delta"
 	row := m.db.QueryRow(query, n, "counter", v, 0)
 	if err := row.Scan(&value); err != nil {
 		m.log.Error("Can not scan counter value in update function ", err)

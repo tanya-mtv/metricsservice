@@ -89,7 +89,7 @@ func (s *server) SaveDataToFile(ctx context.Context, fileName string, interval i
 	for {
 		select {
 		case <-pollTicker.C:
-			s.save(fileName)
+			_ = s.save(fileName)
 		case <-ctx.Done():
 			return
 		}

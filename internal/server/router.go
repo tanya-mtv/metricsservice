@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
+
 	"github.com/tanya-mtv/metricsservice/internal/handler"
 )
 
@@ -12,7 +13,7 @@ func (s *server) NewRouter(db *sqlx.DB) *gin.Engine {
 
 	router := gin.New()
 
-	router.Use(h.GzipMiddleware)
+	//router.Use(h.GzipMiddleware)
 	router.Use(h.WithLogging)
 
 	router.GET("/", h.GetAllMetrics)

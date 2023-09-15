@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
+
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
@@ -170,9 +171,10 @@ func (m *DBStorage) UpdateMetrics(metrics []*models.Metrics) ([]*models.Metrics,
 	if err != nil {
 		return metrics, err
 	}
-
+	// можно вызвать Rollback в defer,
+	// если Commit будет раньше, то откат проигнорируется
 	defer func() {
-		tx.Rollback()
+		_ = tx.Rollback()
 	}()
 
 	stmt, err := tx.Prepare(

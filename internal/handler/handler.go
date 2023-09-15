@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-
 	"net/http"
 	"strconv"
 
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/tanya-mtv/metricsservice/internal/config"
 	"github.com/tanya-mtv/metricsservice/internal/models"
 )
@@ -137,7 +137,6 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 	case "gauge":
 
 		gug, found := h.storage.GetGauge(metric.ID)
-
 		if !found {
 			newErrorResponse(c, http.StatusNotFound, "Metric not found")
 			return

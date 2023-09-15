@@ -49,7 +49,7 @@ func (m *MetricRepositoryCollector) GetAllCounter() map[string]Counter {
 
 func (m *MetricRepositoryCollector) GetAllGauge() map[string]Gauge {
 	m.mu.RLock()
-	defer m.mu.Unlock()
+	defer m.mu.RUnlock()
 
 	data := make(map[string]Gauge, len(m.gaugeData))
 
@@ -69,9 +69,6 @@ func (m *MetricRepositoryCollector) GetAllMetricsList() []models.Metrics {
 		listmetrics = append(listmetrics, models.Metrics{ID: name, MType: "gauge", Value: &tmp})
 
 	}
-
-	m.mu.RLock()
-	defer m.mu.RUnlock()
 
 	for name, value := range m.counterData {
 		tmp := int64(value)

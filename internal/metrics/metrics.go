@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+
 	"github.com/tanya-mtv/metricsservice/internal/constants"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 
@@ -28,23 +29,14 @@ type counter struct {
 }
 
 func (c *counter) inc() {
-	c.Lock()
-	defer c.Unlock()
-
 	atomic.AddInt32(c.num, 1)
 }
 
 func (c *counter) value() int32 {
-	c.RLock()
-	defer c.RUnlock()
-
 	return atomic.LoadInt32(c.num)
 }
 
 func (c *counter) nulValue() {
-	c.Lock()
-	defer c.Unlock()
-
 	atomic.StoreInt32(c.num, 0)
 }
 

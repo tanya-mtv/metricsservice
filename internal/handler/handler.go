@@ -96,6 +96,7 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 }
 
 func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
+	c.Writer.Header().Set("Content-Type", "application/json")
 	if c.ContentType() != "application/json" {
 		h.log.Error("PostMetricsValueJSON. Incorrect  ContentType")
 		newErrorResponse(c, http.StatusBadRequest, "{}")
@@ -103,19 +104,23 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 	}
 	var metric models.Metrics
 
-	jsonData, _ := io.ReadAll(c.Request.Body)
+	jsonData, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		h.log.Error(err)
+		return
+	}
+	defer c.Request.Body.Close()
 
 	if err := json.Unmarshal(jsonData, &metric); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "{}")
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		h.log.Error(err)
 		return
 	}
 
 	switch metric.MType {
 	case "counter":
-
 		cnt, found := h.storage.GetCounter(metric.ID)
-
 		if !found {
 			newErrorResponse(c, http.StatusNotFound, "Metric not found")
 			return
@@ -128,8 +133,6 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 			MType: "counter",
 			Delta: &tmp,
 		}
-
-		c.Writer.Header().Set("Content-Type", "application/json")
 		c.JSON(http.StatusOK, metric)
 	case "gauge":
 
@@ -146,8 +149,6 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 			MType: "gauge",
 			Value: &tmp,
 		}
-
-		c.Writer.Header().Set("Content-Type", "application/json")
 		c.JSON(http.StatusOK, metric)
 	default:
 		c.JSON(http.StatusBadRequest, 0)

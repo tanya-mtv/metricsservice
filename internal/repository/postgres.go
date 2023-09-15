@@ -170,9 +170,10 @@ func (m *DBStorage) UpdateMetrics(metrics []*models.Metrics) ([]*models.Metrics,
 	if err != nil {
 		return metrics, err
 	}
-	// можно вызвать Rollback в defer,
-	// если Commit будет раньше, то откат проигнорируется
-	defer tx.Rollback()
+
+	defer func() {
+		tx.Rollback()
+	}()
 
 	stmt, err := tx.Prepare(
 		"INSERT INTO metrics (name, mtype, delta, value) values ($1, $2, $3, $4)" +
@@ -204,7 +205,7 @@ func (m *DBStorage) UpdateMetrics(metrics []*models.Metrics) ([]*models.Metrics,
 		}
 	}
 
-	tx.Commit()
+	_ = tx.Commit()
 
 	return metrics, nil
 }

@@ -67,6 +67,7 @@ func (m *MetricRepositoryCollector) GetAllMetricsList() []models.Metrics {
 	for name, value := range m.gaugeData {
 		tmp := float64(value)
 		listmetrics = append(listmetrics, models.Metrics{ID: name, MType: "gauge", Value: &tmp})
+		break
 
 	}
 

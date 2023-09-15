@@ -128,23 +128,23 @@ func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string
 		return "", err
 	}
 
-	// err = sm.Compression(data)
+	err = sm.Compression(data)
 
-	// if err != nil {
-	// 	sm.log.Info(err)
-	// 	return "", err
-	// }
+	if err != nil {
+		sm.log.Info(err)
+		return "", err
+	}
 
-	// req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
-	req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(data))
+	req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
+	// req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(data))
 	if err != nil {
 		sm.log.Error(err)
 		return "", err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	// req.Header.Set("Content-Encoding", "gzip")
-	// req.Header.Set("Accept-Encoding", "identity")
+	req.Header.Set("Content-Encoding", "gzip")
+	req.Header.Set("Accept-Encoding", "identity")
 	resp, err := sm.httpClient.Do(req)
 
 	if err != nil {

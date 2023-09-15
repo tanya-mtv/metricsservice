@@ -65,12 +65,12 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		return
 	}
 	jsonData, err := io.ReadAll(c.Request.Body)
-
 	if err != nil {
-		h.log.Error("PostMetricsList", err)
-		newErrorResponse(c, http.StatusBadRequest, "{}")
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		h.log.Error(err)
 		return
 	}
+	defer c.Request.Body.Close()
 
 	var metrics []*models.Metrics
 	if err := json.Unmarshal(jsonData, &metrics); err != nil {

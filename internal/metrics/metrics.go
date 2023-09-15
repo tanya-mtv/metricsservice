@@ -144,7 +144,7 @@ func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string
 
 	req.Header.Set("Content-Type", "application/json")
 	// req.Header.Set("Content-Encoding", "gzip")
-	req.Header.Set("Accept-Encoding", "identity")
+	// req.Header.Set("Accept-Encoding", "identity")
 	resp, err := sm.httpClient.Do(req)
 
 	if err != nil {

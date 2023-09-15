@@ -130,13 +130,13 @@ func newMetric(metricName, metricsType string) *models.Metrics {
 func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string, error) {
 
 	data, err := json.Marshal(&metrics)
-	rdata := bytes.Replace(data, []byte("godge"), []byte("gauge"), -1)
+
 	if err != nil {
 		sm.log.Debug("Can't post message")
 		return "", err
 	}
 
-	err = sm.Compression(rdata)
+	err = sm.Compression(data)
 
 	if err != nil {
 		sm.log.Info(err)

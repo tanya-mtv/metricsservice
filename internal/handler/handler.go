@@ -104,11 +104,17 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 	}
 	var metric models.Metrics
 
-	jsonData, _ := io.ReadAll(c.Request.Body)
+	jsonData, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		h.log.Error(err)
+		return
+	}
+
 	defer c.Request.Body.Close()
 
 	if err := json.Unmarshal(jsonData, &metric); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "{}")
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		h.log.Error(err)
 		return
 	}

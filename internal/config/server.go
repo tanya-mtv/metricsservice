@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	"github.com/caarlos0/env"
+
 	"github.com/tanya-mtv/metricsservice/internal/constants"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 )
@@ -26,7 +27,7 @@ func InitServer() (*ConfigServer, error) {
 	var flagDSN string
 
 	cfg := &ConfigServer{}
-	env.Parse(cfg)
+	_ = env.Parse(cfg)
 
 	flag.StringVar(&flagRunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.IntVar(&flagInterval, "i", 300, "Saved interval")

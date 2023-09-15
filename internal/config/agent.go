@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	"github.com/caarlos0/env"
+
 	"github.com/tanya-mtv/metricsservice/internal/constants"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 )
@@ -21,7 +22,7 @@ func InitAgent() (*ConfigAgent, error) {
 	var reportInterval int
 
 	cfg := &ConfigAgent{}
-	env.Parse(cfg)
+	_ = env.Parse(cfg)
 
 	flag.StringVar(&flagRunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.IntVar(&reportInterval, "r", 10, "report interval in seconds")

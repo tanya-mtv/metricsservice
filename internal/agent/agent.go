@@ -42,6 +42,7 @@ func (a *agent) Run() error {
 	for {
 		select {
 		case <-ctx.Done():
+			stop()
 			return nil
 		case <-pollIntervalTicker.C:
 			a.metrics.MetricsMonitor()

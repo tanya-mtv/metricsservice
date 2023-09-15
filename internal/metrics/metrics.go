@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+
 	"github.com/tanya-mtv/metricsservice/internal/constants"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 
@@ -23,29 +24,20 @@ import (
 )
 
 type counter struct {
-	num int32
+	num *int32
 	sync.RWMutex
 }
 
 func (c *counter) inc() {
-	c.Lock()
-	defer c.Unlock()
-
-	atomic.AddInt32(&c.num, 1)
+	atomic.AddInt32(c.num, 1)
 }
 
 func (c *counter) value() int32 {
-	c.RLock()
-	defer c.RUnlock()
-
-	return c.num
+	return atomic.LoadInt32(c.num)
 }
 
 func (c *counter) nulValue() {
-	c.Lock()
-	defer c.Unlock()
-
-	c.num = 0
+	atomic.StoreInt32(c.num, 0)
 }
 
 type ServiceMetrics struct {
@@ -72,7 +64,7 @@ func NewServiceMetrics(collector *repository.MetricRepositoryCollector, cfg *con
 		cfg:       cfg,
 		collector: collector,
 		counter: &counter{
-			num: 0,
+			num: new(int32),
 		},
 		httpClient: retryClient,
 		gzr:        gz,

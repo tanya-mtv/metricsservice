@@ -1,4 +1,4 @@
-package hashSHA
+package hashsha
 
 import (
 	"crypto/hmac"

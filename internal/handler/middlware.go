@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/tanya-mtv/metricsservice/internal/constants"
-	"github.com/tanya-mtv/metricsservice/internal/hashSHA"
+	"github.com/tanya-mtv/metricsservice/internal/hashsha"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,9 +45,9 @@ func (h *Handler) CheckHash(c *gin.Context) {
 		}
 		defer c.Request.Body.Close()
 
-		textHeader := hashSHA.CreateHash(h.cfg.HashKey, jsonData)
+		textHeader := hashsha.CreateHash(h.cfg.HashKey, jsonData)
 
-		if string(textHeader) != c.GetHeader("HashSHA256") {
+		if string(textHeader) != c.GetHeader(constants.HashHeader) {
 			h.log.Info("hashes are not equal")
 			newErrorResponse(c, http.StatusBadRequest, "hashes are not equal")
 			return

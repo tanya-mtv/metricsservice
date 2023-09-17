@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/tanya-mtv/metricsservice/internal/constants"
-	"github.com/tanya-mtv/metricsservice/internal/hashSHA"
+	"github.com/tanya-mtv/metricsservice/internal/hashsha"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 
 	"github.com/tanya-mtv/metricsservice/internal/config"
@@ -203,7 +203,7 @@ func (sm *ServiceMetrics) Post(metric *models.Metrics, url string) (string, erro
 	}
 
 	if sm.cfg.HashKey != "" {
-		textHeader := hashSHA.CreateHash(sm.cfg.HashKey, data)
+		textHeader := hashsha.CreateHash(sm.cfg.HashKey, data)
 
 		req.Header.Set("HashSHA256", string(textHeader))
 	}

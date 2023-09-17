@@ -13,6 +13,7 @@ type ConfigAgent struct {
 	Port           string `env:"ADDRESS"`
 	ReportInterval int    `env:"REPORT_INTERVAL"`
 	PollInterval   int    `env:"POLL_INTERVAL"`
+	HashKey        string `env:"KEY"`
 	Logger         *logger.Config
 }
 
@@ -20,6 +21,7 @@ func InitAgent() (*ConfigAgent, error) {
 	var flagRunAddr string
 	var pollInterval int
 	var reportInterval int
+	var flaghashkey string
 
 	cfg := &ConfigAgent{}
 	_ = env.Parse(cfg)
@@ -27,6 +29,7 @@ func InitAgent() (*ConfigAgent, error) {
 	flag.StringVar(&flagRunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.IntVar(&reportInterval, "r", 10, "report interval in seconds")
 	flag.IntVar(&pollInterval, "p", 2, "poll interval in seconds")
+	flag.StringVar(&flaghashkey, "k", "secretkey", "key for hash func")
 	flag.Parse()
 
 	if cfg.PollInterval == 0 {
@@ -39,6 +42,10 @@ func InitAgent() (*ConfigAgent, error) {
 
 	if cfg.Port == "" {
 		cfg.Port = flagRunAddr
+	}
+
+	if cfg.HashKey == "" {
+		cfg.HashKey = flaghashkey
 	}
 
 	cfglog := &logger.Config{

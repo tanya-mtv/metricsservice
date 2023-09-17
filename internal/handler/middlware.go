@@ -1,9 +1,13 @@
 package handler
 
 import (
+	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/tanya-mtv/metricsservice/internal/constants"
+	"github.com/tanya-mtv/metricsservice/internal/hashSHA"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,6 +28,34 @@ func (h *Handler) WithLogging(c *gin.Context) {
 		"status:", res.Status(),
 		"size:", res.Size(),
 	)
+
+}
+
+func (h *Handler) CheckHash(c *gin.Context) {
+
+	header := c.GetHeader(constants.HashHeader)
+
+	if header != "" {
+
+		jsonData, err := io.ReadAll(c.Request.Body)
+		if err != nil {
+			newErrorResponse(c, http.StatusBadRequest, err.Error())
+			h.log.Error(err)
+			return
+		}
+		defer c.Request.Body.Close()
+
+		textHeader := hashSHA.CreateHash(h.cfg.HashKey, jsonData)
+
+		if string(textHeader) != c.GetHeader("HashSHA256") {
+			h.log.Info("hashes are not equal")
+			newErrorResponse(c, http.StatusBadRequest, "hashes are not equal")
+			return
+		}
+
+	}
+
+	c.Next()
 
 }
 

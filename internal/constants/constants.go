@@ -11,4 +11,6 @@ const (
 	RetryWaitMin time.Duration = 1 * time.Second
 	RetryMedium  time.Duration = 3 * time.Second
 	RetryWaitMax time.Duration = 5 * time.Second
+
+	HashHeader string = "HashSHA256"
 )

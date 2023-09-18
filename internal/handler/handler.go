@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -204,8 +203,7 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 
 	header, hashashheader := c.Get("Hash")
 
-	if hashashheader && len(header.(string)) > 4 {
-		fmt.Printf("22222222222222222 %T\n", header)
+	if hashashheader {
 		textHeader := hashsha.CreateHash(h.cfg.HashKey, jsonData)
 		if textHeader != header {
 			h.log.Info("hashes are not equal")

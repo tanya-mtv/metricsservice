@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -201,8 +202,10 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 		return
 	}
 
-	header, ok := c.Get("Hash")
-	if ok {
+	header, hashashheader := c.Get("Hash")
+
+	if hashashheader && len(header.(string)) > 4 {
+		fmt.Printf("22222222222222222 %T\n", header)
 		textHeader := hashsha.CreateHash(h.cfg.HashKey, jsonData)
 		if textHeader != header {
 			h.log.Info("hashes are not equal")
@@ -230,7 +233,7 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 
 		metric.Delta = &cnt
 
-		if h.cfg.HashKey != "" {
+		if h.cfg.HashKey != "" && hashashheader {
 			data, err := json.Marshal(&metric)
 
 			if err != nil {
@@ -251,7 +254,7 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 		gug := float64(h.storage.UpdateGauge(metric.ID, metricValue))
 		h.log.Info("Update gauge data with value ", gug)
 		metric.Value = &gug
-		if h.cfg.HashKey != "" {
+		if h.cfg.HashKey != "" && hashashheader {
 			data, err := json.Marshal(&metric)
 
 			if err != nil {

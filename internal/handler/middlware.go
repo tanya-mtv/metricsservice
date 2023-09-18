@@ -1,15 +1,12 @@
 package handler
 
 import (
-	"io"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/tanya-mtv/metricsservice/internal/constants"
-	"github.com/tanya-mtv/metricsservice/internal/hashsha"
-
 	"github.com/gin-gonic/gin"
+	"github.com/tanya-mtv/metricsservice/internal/constants"
 )
 
 func (h *Handler) WithLogging(c *gin.Context) {
@@ -36,27 +33,8 @@ func (h *Handler) CheckHash(c *gin.Context) {
 	header := c.GetHeader(constants.HashHeader)
 
 	if header != "" {
-
-		jsonData, err := io.ReadAll(c.Request.Body)
-		if err != nil {
-			newErrorResponse(c, http.StatusBadRequest, err.Error())
-			h.log.Error(err)
-			return
-		}
-		defer c.Request.Body.Close()
-
-		textHeader := hashsha.CreateHash(h.cfg.HashKey, jsonData)
-
-		if string(textHeader) != c.GetHeader(constants.HashHeader) {
-			h.log.Info("hashes are not equal")
-			newErrorResponse(c, http.StatusBadRequest, "hashes are not equal")
-			return
-		}
-
+		c.Set("Hash", header)
 	}
-
-	c.Next()
-
 }
 
 func (h *Handler) GzipMiddleware(c *gin.Context) {

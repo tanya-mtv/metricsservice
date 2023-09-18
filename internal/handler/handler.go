@@ -2,11 +2,11 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 
+	"github.com/tanya-mtv/metricsservice/internal/hashsha"
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 
 	"github.com/gin-gonic/gin"
@@ -191,12 +191,26 @@ func (h *Handler) PostMetrics(c *gin.Context) {
 }
 
 func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
-
+	c.Writer.Header().Set("Content-Type", "application")
 	var metric models.Metrics
 
-	jsonData, _ := io.ReadAll(c.Request.Body)
+	jsonData, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		h.log.Error("ReadAll", err)
+		newErrorResponse(c, http.StatusBadRequest, "{}")
+		return
+	}
 
-	fmt.Println("PostMetricsUpdateJSON data ", string(jsonData))
+	header, ok := c.Get("Hash")
+	if ok {
+		textHeader := hashsha.CreateHash(h.cfg.HashKey, jsonData)
+		if textHeader != header {
+			h.log.Info("hashes are not equal")
+			newErrorResponse(c, http.StatusBadRequest, "hashes are not equal")
+			return
+		}
+	}
+
 	if err := json.Unmarshal(jsonData, &metric); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, "{}")
 		h.log.Error(err)
@@ -216,7 +230,16 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 
 		metric.Delta = &cnt
 
-		c.Writer.Header().Set("Content-Type", "application")
+		if h.cfg.HashKey != "" {
+			data, err := json.Marshal(&metric)
+
+			if err != nil {
+				h.log.Debug("Can't marshal counter metric")
+				return
+			}
+			respheader := hashsha.CreateHash(h.cfg.HashKey, data)
+			c.Writer.Header().Set("HashSHA256", respheader)
+		}
 		c.JSON(http.StatusOK, metric)
 	case "gauge":
 		if metric.Value == nil {
@@ -228,8 +251,16 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 		gug := float64(h.storage.UpdateGauge(metric.ID, metricValue))
 		h.log.Info("Update gauge data with value ", gug)
 		metric.Value = &gug
+		if h.cfg.HashKey != "" {
+			data, err := json.Marshal(&metric)
 
-		c.Writer.Header().Set("Content-Type", "application")
+			if err != nil {
+				h.log.Debug("Can't marshal counter metric")
+				return
+			}
+			respheader := hashsha.CreateHash(h.cfg.HashKey, data)
+			c.Writer.Header().Set("HashSHA256", respheader)
+		}
 		c.JSON(http.StatusOK, metric)
 	default:
 		c.JSON(http.StatusBadRequest, 0)

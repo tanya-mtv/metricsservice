@@ -137,7 +137,7 @@ func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string
 	}
 
 	req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
-	// req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(data))
+
 	if err != nil {
 		sm.log.Error(err)
 		return "", err
@@ -190,9 +190,15 @@ func (sm *ServiceMetrics) Compression(b []byte) error {
 func (sm *ServiceMetrics) Post(metric *models.Metrics, url string) (string, error) {
 
 	data, err := json.Marshal(&metric)
-
 	if err != nil {
 		sm.log.Debug("Can't post message")
+		return "", err
+	}
+
+	err = sm.Compression(data)
+
+	if err != nil {
+		sm.log.Info(err)
 		return "", err
 	}
 
@@ -202,23 +208,13 @@ func (sm *ServiceMetrics) Post(metric *models.Metrics, url string) (string, erro
 		return "", err
 	}
 
-	if sm.cfg.HashKey != "" {
-		textHeader := hashsha.CreateHash(sm.cfg.HashKey, data)
-
-		req.Header.Set("HashSHA256", string(textHeader))
-	}
-
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Content-Encoding", "gzip")
 	req.Header.Set("Accept-Encoding", "identity")
-
-	err = sm.Compression(data)
-
-	if err != nil {
-		sm.log.Info(err)
-		return "", err
+	if sm.cfg.HashKey != "" {
+		textHeader := hashsha.CreateHash(sm.cfg.HashKey, data)
+		req.Header.Set(constants.HashHeader, textHeader)
 	}
-
 	resp, err := sm.httpClient.Do(req)
 
 	if err != nil {

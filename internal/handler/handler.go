@@ -201,7 +201,7 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 		return
 	}
 
-	header, hashashheader := c.Get("Hash")
+	header, hashashheader := c.Get("ReqHashHeader")
 
 	if hashashheader {
 		textHeader := hashsha.CreateHash(h.cfg.HashKey, jsonData)

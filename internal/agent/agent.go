@@ -47,7 +47,7 @@ func (a *agent) Run() error {
 		case <-pollIntervalTicker.C:
 			a.metrics.MetricsMonitor()
 		case <-reportIntervalTicker.C:
-			// a.metrics.PostMessageJSON()
+			a.metrics.PostMessageJSON()
 			a.metrics.PostMessage()
 		}
 	}

@@ -27,6 +27,7 @@ func InitAgent() (*ConfigAgent, error) {
 	flag.StringVar(&flagRunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.IntVar(&reportInterval, "r", 10, "report interval in seconds")
 	flag.IntVar(&pollInterval, "p", 2, "poll interval in seconds")
+
 	flag.Parse()
 
 	if cfg.PollInterval == 0 {

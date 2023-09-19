@@ -130,10 +130,10 @@ func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string
 
 	// err = sm.Compression(data)
 
-	if err != nil {
-		sm.log.Info(err)
-		return "", err
-	}
+	// if err != nil {
+	// 	sm.log.Info(err)
+	// 	return "", err
+	// }
 
 	// req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
 	req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(data))

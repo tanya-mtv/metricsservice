@@ -191,7 +191,7 @@ func (h *Handler) PostMetrics(c *gin.Context) {
 }
 
 func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
-
+	c.Writer.Header().Set("Content-Type", "application/json")
 	var metric models.Metrics
 
 	jsonData, _ := io.ReadAll(c.Request.Body)
@@ -216,7 +216,6 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 
 		metric.Delta = &cnt
 
-		c.Writer.Header().Set("Content-Type", "application")
 		c.JSON(http.StatusOK, metric)
 	case "gauge":
 		if metric.Value == nil {
@@ -229,7 +228,6 @@ func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
 		h.log.Info("Update gauge data with value ", gug)
 		metric.Value = &gug
 
-		c.Writer.Header().Set("Content-Type", "application")
 		c.JSON(http.StatusOK, metric)
 	default:
 		c.JSON(http.StatusBadRequest, 0)

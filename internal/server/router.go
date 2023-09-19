@@ -14,7 +14,7 @@ func (s *server) NewRouter(db *sqlx.DB) *gin.Engine {
 	router := gin.New()
 
 	router.Use(h.GzipMiddleware)
-	router.Use(h.CheckHash)
+	// router.Use(h.CheckHash)
 	router.Use(h.WithLogging)
 
 	router.GET("/", h.GetAllMetrics)

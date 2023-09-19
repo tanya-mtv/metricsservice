@@ -64,14 +64,10 @@ func (m *MetricRepositoryCollector) GetAllMetricsList() []models.Metrics {
 	defer m.mu.RUnlock()
 
 	var listmetrics []models.Metrics
-	k := 0
+
 	for name, value := range m.gaugeData {
-		k += 1
 		tmp := float64(value)
 		listmetrics = append(listmetrics, models.Metrics{ID: name, MType: "gauge", Value: &tmp})
-		if k == 2 {
-			break
-		}
 
 	}
 
@@ -80,5 +76,6 @@ func (m *MetricRepositoryCollector) GetAllMetricsList() []models.Metrics {
 		listmetrics = append(listmetrics, models.Metrics{ID: name, MType: "counter", Delta: &tmp})
 
 	}
+
 	return listmetrics
 }

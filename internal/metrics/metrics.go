@@ -3,6 +3,7 @@ package metrics
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -120,7 +121,7 @@ func newMetric(metricName, metricsType string) *models.Metrics {
 		MType: metricsType,
 	}
 }
-func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string, error) {
+func (sm *ServiceMetrics) PostJSON(ctx context.Context, metrics []models.Metrics, url string) (string, error) {
 
 	data, err := json.Marshal(&metrics)
 
@@ -136,7 +137,7 @@ func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string
 		return "", err
 	}
 
-	req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
+	req, err := retryablehttp.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(sm.buf.Bytes()))
 
 	if err != nil {
 		sm.log.Error(err)
@@ -158,12 +159,12 @@ func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string
 	return string(body), err
 }
 
-func (sm *ServiceMetrics) PostMessageJSON() {
+func (sm *ServiceMetrics) PostMessageJSON(ctx context.Context) {
 	addr := fmt.Sprintf("http://%s/updates/", sm.cfg.Port)
 	listMetrics := sm.collector.GetAllMetricsList()
 
 	if len(listMetrics) > 0 {
-		_, err := sm.PostJSON(listMetrics, addr)
+		_, err := sm.PostJSON(ctx, listMetrics, addr)
 		if err != nil {
 			sm.log.Info(err)
 		}
@@ -187,7 +188,7 @@ func (sm *ServiceMetrics) Compression(b []byte) error {
 	return nil
 }
 
-func (sm *ServiceMetrics) Post(metric *models.Metrics, url string) (string, error) {
+func (sm *ServiceMetrics) Post(ctx context.Context, metric *models.Metrics, url string) (string, error) {
 
 	data, err := json.Marshal(&metric)
 	if err != nil {
@@ -202,7 +203,7 @@ func (sm *ServiceMetrics) Post(metric *models.Metrics, url string) (string, erro
 		return "", err
 	}
 
-	req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
+	req, err := retryablehttp.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(sm.buf.Bytes()))
 	if err != nil {
 		sm.log.Error(err)
 		return "", err
@@ -227,7 +228,7 @@ func (sm *ServiceMetrics) Post(metric *models.Metrics, url string) (string, erro
 	return string(body), err
 }
 
-func (sm *ServiceMetrics) PostMessage() {
+func (sm *ServiceMetrics) PostMessage(ctx context.Context) {
 	addr := fmt.Sprintf("http://%s/update", sm.cfg.Port)
 
 	for name, value := range sm.collector.GetAllGauge() {
@@ -235,7 +236,7 @@ func (sm *ServiceMetrics) PostMessage() {
 		tmp := float64(value)
 		data.Value = &tmp
 
-		_, err := sm.Post(data, addr)
+		_, err := sm.Post(ctx, data, addr)
 
 		if err != nil {
 			sm.log.Info(err)
@@ -248,7 +249,7 @@ func (sm *ServiceMetrics) PostMessage() {
 		tmp := int64(value)
 		data.Delta = &tmp
 
-		_, err := sm.Post(data, addr)
+		_, err := sm.Post(ctx, data, addr)
 
 		if err != nil {
 			sm.log.Info(err)

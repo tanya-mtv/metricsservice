@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
@@ -13,6 +14,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/tanya-mtv/metricsservice/internal/constants"
@@ -119,6 +121,25 @@ func newMetric(metricName, metricsType string) *models.Metrics {
 		MType: metricsType,
 	}
 }
+
+func (sm *ServiceMetrics) postData(addr string, body interface{}) (err error) {
+	var (
+		resp *resty.Response
+	)
+	httpclient := resty.New().SetTimeout(5 * time.Second)
+	request := httpclient.NewRequest().SetHeader("content-type", "application/json").SetBody(body)
+	request.Method = http.MethodPost
+	request.URL = addr
+	if resp, err = request.Send(); err != nil {
+		return err
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return errors.New("unexpected status code, want 200")
+	}
+	return nil
+}
+
 func (sm *ServiceMetrics) PostJSON(metrics []models.Metrics, url string) (string, error) {
 
 	data, err := json.Marshal(&metrics)
@@ -162,7 +183,8 @@ func (sm *ServiceMetrics) PostMessageJSON() {
 	listMetrics := sm.collector.GetAllMetricsList()
 
 	if len(listMetrics) > 0 {
-		_, err := sm.PostJSON(listMetrics, addr)
+		// _, err := sm.PostJSON(listMetrics, addr)
+		err := sm.postData(addr, listMetrics)
 		if err != nil {
 			sm.log.Info(err)
 		}

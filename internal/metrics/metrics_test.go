@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -54,11 +55,11 @@ func TestServiceMetrics_Post(t *testing.T) {
 		{"Post method gauge", []models.Metrics{*metric1}, ""},
 		{"Post method counter", []models.Metrics{*metric2}, ""},
 	}
-
+	ctx := context.Background()
 	for _, tt := range tests {
 		t.Run(tt.nameTest, func(t *testing.T) {
 
-			_, err := sm.PostJSON(tt.body, addr)
+			_, err := sm.PostJSON(ctx, tt.body, addr)
 
 			require.NoError(t, err, "error making HTTP request")
 

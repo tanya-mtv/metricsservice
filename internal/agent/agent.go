@@ -42,12 +42,12 @@ func (a *agent) Run() error {
 	for {
 		select {
 		case <-ctx.Done():
+			a.metrics.PostMessageJSON()
 			stop()
 			return nil
 		case <-pollIntervalTicker.C:
 			a.metrics.MetricsMonitor()
 		case <-reportIntervalTicker.C:
-			a.metrics.PostMessageJSON()
 			a.metrics.PostMessage()
 		}
 	}

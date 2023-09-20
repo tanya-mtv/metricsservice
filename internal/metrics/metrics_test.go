@@ -58,11 +58,6 @@ func TestServiceMetrics_Post(t *testing.T) {
 	ctx := context.Background()
 	for _, tt := range tests {
 		t.Run(tt.nameTest, func(t *testing.T) {
-<<<<<<< HEAD
-			ctx := context.Background()
-=======
-
->>>>>>> iter13
 			_, err := sm.PostJSON(ctx, tt.body, addr)
 
 			require.NoError(t, err, "error making HTTP request")

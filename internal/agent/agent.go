@@ -48,7 +48,6 @@ func (a *agent) Run() error {
 			a.metrics.MetricsMonitor()
 		case <-reportIntervalTicker.C:
 			a.metrics.PostMessageJSON(ctx)
-
 		}
 	}
 

@@ -30,6 +30,7 @@ func InitAgent() (*ConfigAgent, error) {
 	flag.IntVar(&reportInterval, "r", 10, "report interval in seconds")
 	flag.IntVar(&pollInterval, "p", 2, "poll interval in seconds")
 	flag.StringVar(&flaghashkey, "k", "secretkey", "key for hash func")
+
 	flag.Parse()
 
 	if cfg.PollInterval == 0 {

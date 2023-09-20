@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -148,6 +149,8 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 			MType: "gauge",
 			Value: &tmp,
 		}
+
+		fmt.Printf("%+v\n", metric)
 		c.JSON(http.StatusOK, metric)
 	default:
 		c.JSON(http.StatusBadRequest, 0)
@@ -191,7 +194,7 @@ func (h *Handler) PostMetrics(c *gin.Context) {
 }
 
 func (h *Handler) PostMetricsUpdateJSON(c *gin.Context) {
-	c.Writer.Header().Set("Content-Type", "application")
+	c.Writer.Header().Set("Content-Type", "application/json")
 	var metric models.Metrics
 
 	jsonData, err := io.ReadAll(c.Request.Body)

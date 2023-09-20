@@ -15,9 +15,9 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-
 	"github.com/tanya-mtv/metricsservice/internal/constants"
 	"github.com/tanya-mtv/metricsservice/internal/hashsha"
+
 	"github.com/tanya-mtv/metricsservice/internal/logger"
 
 	"github.com/tanya-mtv/metricsservice/internal/config"
@@ -121,12 +121,12 @@ func newMetric(metricName, metricsType string) *models.Metrics {
 		MType: metricsType,
 	}
 }
+
 func (sm *ServiceMetrics) PostJSON(ctx context.Context, metrics []models.Metrics, url string) (string, error) {
 
 	data, err := json.Marshal(&metrics)
-
 	if err != nil {
-		sm.log.Debug("Can't post message")
+		sm.log.Debug("Can't post message. Marshal error")
 		return "", err
 	}
 
@@ -157,14 +157,15 @@ func (sm *ServiceMetrics) PostJSON(ctx context.Context, metrics []models.Metrics
 
 	body, err := io.ReadAll(resp.Body)
 	return string(body), err
+
 }
 
 func (sm *ServiceMetrics) PostMessageJSON(ctx context.Context) {
 	addr := fmt.Sprintf("http://%s/updates/", sm.cfg.Port)
 	listMetrics := sm.collector.GetAllMetricsList()
-
 	if len(listMetrics) > 0 {
 		_, err := sm.PostJSON(ctx, listMetrics, addr)
+
 		if err != nil {
 			sm.log.Info(err)
 		}
@@ -172,20 +173,6 @@ func (sm *ServiceMetrics) PostMessageJSON(ctx context.Context) {
 
 	sm.counter.nulValue()
 
-}
-
-func (sm *ServiceMetrics) Compression(b []byte) error {
-
-	sm.buf.Reset()
-	sm.gzr.Reset(&sm.buf)
-	_, err := sm.gzr.Write(b)
-	if err != nil {
-		sm.log.Debug(err)
-		return err
-	}
-	sm.gzr.Close()
-
-	return nil
 }
 
 func (sm *ServiceMetrics) Post(ctx context.Context, metric *models.Metrics, url string) (string, error) {
@@ -262,4 +249,18 @@ func (sm *ServiceMetrics) PostMessage(ctx context.Context) {
 func backoff(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 	sleepTime := min + min*time.Duration(2*attemptNum)
 	return sleepTime
+}
+
+func (sm *ServiceMetrics) Compression(b []byte) error {
+
+	sm.buf.Reset()
+	sm.gzr.Reset(&sm.buf)
+	_, err := sm.gzr.Write(b)
+	if err != nil {
+		sm.log.Debug(err)
+		return err
+	}
+	sm.gzr.Close()
+
+	return nil
 }

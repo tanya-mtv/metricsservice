@@ -22,6 +22,7 @@ func (s *server) openStorage(ctx context.Context, db *sqlx.DB) {
 
 	if ptr == db {
 		if s.cfg.FileName != "" {
+			fmt.Println("5555555555555555555555")
 			s.stor = repository.NewMetricFiles()
 			if s.cfg.Restore {
 				s.LoadLDataFromFile(s.cfg.FileName)

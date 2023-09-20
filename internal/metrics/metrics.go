@@ -121,25 +121,6 @@ func newMetric(metricName, metricsType string) *models.Metrics {
 	}
 }
 
-// func (sm *ServiceMetrics) postData(addr string, body interface{}) (err error) {
-// 	var (
-// 		resp *resty.Response
-// 	)
-// 	httpclient := resty.New().SetTimeout(5 * time.Second)
-// 	request := httpclient.R.SetHeader("accept-encoding", "gzip").SetHeader("content-type", "application/json").SetBody(body)
-// 	// request := httpclient.NewRequest().R.SetHeader("accept-encoding", "gzip").SetHeader("content-type", "application/json").SetBody(body)
-// 	request.Method = http.MethodPost
-// 	request.URL = addr
-// 	if resp, err = request.Send(); err != nil {
-// 		return err
-// 	}
-
-// 	if resp.StatusCode() != http.StatusOK {
-// 		return errors.New("unexpected status code, want 200")
-// 	}
-// 	return nil
-// }
-
 func (sm *ServiceMetrics) PostJSON(ctx context.Context, metrics []models.Metrics, url string) (string, error) {
 
 	data, err := json.Marshal(&metrics)
@@ -174,40 +155,7 @@ func (sm *ServiceMetrics) PostJSON(ctx context.Context, metrics []models.Metrics
 
 	body, err := io.ReadAll(resp.Body)
 	return string(body), err
-	// data, err := json.Marshal(&metrics)
 
-	// if err != nil {
-	// 	sm.log.Debug("Can't post message")
-	// 	return "", err
-	// }
-
-	// err = sm.Compression(data)
-
-	// if err != nil {
-	// 	sm.log.Info(err)
-	// 	return "", err
-	// }
-
-	// // req, err := retryablehttp.NewRequest("POST", url, bytes.NewReader(sm.buf.Bytes()))
-	// req, err := retryablehttp.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(sm.buf.Bytes()))
-	// if err != nil {
-	// 	sm.log.Error(err)
-	// 	return "", err
-	// }
-
-	// req.Header.Set("Content-Type", "application/json")
-	// req.Header.Set("Content-Encoding", "gzip")
-	// req.Header.Set("Accept-Encoding", "identity")
-	// resp, err := sm.httpClient.Do(req)
-
-	// if err != nil {
-	// 	sm.log.Debug("Can't post message")
-	// 	return "", err
-	// }
-	// defer resp.Body.Close()
-
-	// body, err := io.ReadAll(resp.Body)
-	// return string(body), err
 }
 
 func (sm *ServiceMetrics) PostMessageJSON(ctx context.Context) {
@@ -215,7 +163,7 @@ func (sm *ServiceMetrics) PostMessageJSON(ctx context.Context) {
 	listMetrics := sm.collector.GetAllMetricsList()
 	if len(listMetrics) > 0 {
 		_, err := sm.PostJSON(ctx, listMetrics, addr)
-		// err := sm.postData(addr, listMetrics)
+
 		if err != nil {
 			sm.log.Info(err)
 		}

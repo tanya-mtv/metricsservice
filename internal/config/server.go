@@ -32,7 +32,7 @@ func InitServer() (*ConfigServer, error) {
 	flag.StringVar(&flagRunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.IntVar(&flagInterval, "i", 300, "Saved interval")
 	flag.StringVar(&flagFileName, "f", "/tmp/metrics-db.json", "storage file")
-	flag.BoolVar(&flagRestore, "r", true, "need of sviving")
+	flag.BoolVar(&flagRestore, "r", true, "need of saviving")
 
 	flag.StringVar(&flagDSN, "d", "sslmode=disable host=localhost port=5432 dbname = yametrics user=dbuser password=password123", "connection to database")
 

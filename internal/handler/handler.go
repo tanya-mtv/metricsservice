@@ -148,6 +148,8 @@ func (h *Handler) PostMetricsValueJSON(c *gin.Context) {
 			MType: "gauge",
 			Value: &tmp,
 		}
+
+		fmt.Printf("%+v\n", metric)
 		c.JSON(http.StatusOK, metric)
 	default:
 		c.JSON(http.StatusBadRequest, 0)

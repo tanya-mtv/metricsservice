@@ -213,7 +213,6 @@ func (sm *ServiceMetrics) PostJSON(ctx context.Context, metrics []models.Metrics
 func (sm *ServiceMetrics) PostMessageJSON(ctx context.Context) {
 	addr := fmt.Sprintf("http://%s/updates/", sm.cfg.Port)
 	listMetrics := sm.collector.GetAllMetricsList()
-
 	if len(listMetrics) > 0 {
 		_, err := sm.PostJSON(ctx, listMetrics, addr)
 		// err := sm.postData(addr, listMetrics)

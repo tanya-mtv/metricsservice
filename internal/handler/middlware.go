@@ -29,7 +29,6 @@ func (h *Handler) WithLogging(c *gin.Context) {
 }
 
 func (h *Handler) CheckHash(c *gin.Context) {
-
 	header := c.GetHeader(constants.HashHeader)
 
 	if header != "" {

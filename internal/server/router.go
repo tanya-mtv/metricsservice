@@ -21,7 +21,7 @@ func (s *server) NewRouter(db *sqlx.DB) *gin.Engine {
 	router.GET("/ping", hp.Ping)
 
 	router.POST("/updates/", h.PostMetricsList)
-	router.POST("/update", h.PostMetricsUpdateJSON)
+	router.POST("/update/", h.PostMetricsUpdateJSON)
 	router.POST("/update/:metricType/:metricName/:metricValue", h.PostMetrics)
 
 	value := router.Group("/value")

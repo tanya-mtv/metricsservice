@@ -8,8 +8,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/tanya-mtv/metricsservice/internal/constants"
-
 	"github.com/jmoiron/sqlx"
 
 	"github.com/tanya-mtv/metricsservice/internal/repository"
@@ -18,11 +16,10 @@ import (
 )
 
 func (s *server) openStorage(ctx context.Context, db *sqlx.DB) {
-	var ptr *sqlx.DB
 
-	if ptr == db {
+	if db == nil {
 		if s.cfg.FileName != "" {
-			fmt.Println("5555555555555555555555")
+
 			s.stor = repository.NewMetricFiles()
 			if s.cfg.Restore {
 				s.LoadLDataFromFile(s.cfg.FileName)
@@ -43,16 +40,14 @@ func (s *server) openStorage(ctx context.Context, db *sqlx.DB) {
 }
 
 func (s *server) LoadLDataFromFile(fileName string) {
-	arrayInt := [4]time.Duration{0, constants.RetryWaitMin, constants.RetryMedium, constants.RetryWaitMax}
 
 	var file []byte
 	var err error
 
-	for _, val := range arrayInt {
+	for _, val := range s.ret.Retries {
 		file, err = os.ReadFile(fileName)
-		if err != nil {
-			s.log.Error(err)
-			time.Sleep(val)
+		if s.ret.Next(err, val) {
+			s.log.Error("Can not read file ", err)
 		} else {
 			break
 		}

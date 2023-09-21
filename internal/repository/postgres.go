@@ -3,12 +3,9 @@ package repository
 import (
 	"database/sql"
 	"errors"
-	"net"
-	"time"
 
-	"github.com/tanya-mtv/metricsservice/internal/constants"
+	"github.com/tanya-mtv/metricsservice/internal/retrier"
 
-	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 
@@ -40,6 +37,7 @@ func NewPostgresDB(dsn string) (*sqlx.DB, error) {
 type DBStorage struct {
 	db  *sqlx.DB
 	log logger.Logger
+	ret *retrier.Retrier
 }
 
 func NewDBStorage(db *sqlx.DB, log logger.Logger) *DBStorage {
@@ -47,37 +45,28 @@ func NewDBStorage(db *sqlx.DB, log logger.Logger) *DBStorage {
 	return &DBStorage{
 		db:  db,
 		log: log,
+		ret: retrier.NewRetrier(),
 	}
 }
 
 func (m *DBStorage) UpdateCounter(n string, v int64) Counter {
 	var value int64
 
-	query := "INSERT INTO metrics as m (name, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (name)  DO UPDATE SET delta = (m.delta + EXCLUDED.delta) returning delta"
-	retrier := NewRetrier()
-	for _, val := range retrier.retries {
-		err := m.db.Ping()
-		//check type of err
-		if haveToRetry(err) {
-			time.Sleep(val)
+	query := `INSERT INTO metrics as m (name, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (name)
+        DO UPDATE SET delta = (m.delta + EXCLUDED.delta) returning delta`
+
+	for _, val := range m.ret.Retries {
+		row := m.db.QueryRow(query, n, "counter", v, 0)
+		err := row.Scan(&value)
+		if m.ret.Next(err, val) {
+			m.log.Error("Can not scan counter value in update function ", err)
 		} else {
-			row := m.db.QueryRow(query, n, "counter", v, 0)
-			if err := row.Scan(&value); err != nil {
-				m.log.Error("Can not scan counter value in update function ", err)
-				return Counter(v)
-			}
-			return Counter(v)
+			return Counter(value)
 		}
+
 	}
 
 	return Counter(value)
-	// query := "INSERT INTO metrics as m (name, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (name)  DO UPDATE SET delta = (m.delta + EXCLUDED.delta) returning delta"
-	// row := m.db.QueryRow(query, n, "counter", v, 0)
-	// if err := row.Scan(&value); err != nil {
-	// 	m.log.Error("Can not scan counter value in update function ", err)
-	// 	return Counter(v)
-	// }
-	// return Counter(v)
 
 }
 
@@ -85,22 +74,18 @@ func (m *DBStorage) UpdateGauge(n string, v float64) Gauge {
 
 	var value float64
 
-	query := "INSERT INTO metrics as m (name, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (name)  DO UPDATE SET value =  EXCLUDED.value returning value"
+	query := `INSERT INTO metrics as m (name, mtype, delta, value) VALUES ($1, $2, $3, $4) ON CONFLICT (name)
+                DO UPDATE SET value =  EXCLUDED.value returning value`
 
-	retrier := NewRetrier()
-	for _, val := range retrier.retries {
-		err := m.db.Ping()
-		//check type of err
-		if haveToRetry(err) {
-			time.Sleep(val)
+	for _, val := range m.ret.Retries {
+		row := m.db.QueryRow(query, n, "gauge", 0, v)
+		err := row.Scan(&value)
+		if m.ret.Next(err, val) {
+			m.log.Error("Can not scan counter value in update function ", err)
 		} else {
-			row := m.db.QueryRow(query, n, "gauge", 0, v)
-			if err := row.Scan(&value); err != nil {
-				m.log.Error("Can not scan counter value in update function ", err)
-				return Gauge(v)
-			}
-			return Gauge(value)
+			return Gauge(v)
 		}
+
 	}
 
 	return Gauge(v)
@@ -110,22 +95,14 @@ func (m *DBStorage) GetAll() []models.Metrics {
 	metricsSlice := make([]models.Metrics, 0, 29)
 	query := "SELECT  name id, mtype, delta, value from metrics"
 
-	retrier := NewRetrier()
-	for _, val := range retrier.retries {
-		err := m.db.Ping()
-		//check type of err
-		if haveToRetry(err) {
-			time.Sleep(val)
+	for _, val := range m.ret.Retries {
+		err := m.db.Select(&metricsSlice, query)
+		if m.ret.Next(err, val) {
+			m.log.Error("Can't get all metric ")
 		} else {
-
-			err := m.db.Select(&metricsSlice, query)
-			if err != nil {
-				m.log.Error("Can't get all metric ")
-				return metricsSlice
-			}
-
 			return metricsSlice
 		}
+
 	}
 
 	return metricsSlice
@@ -186,8 +163,8 @@ func (m *DBStorage) UpdateMetrics(metrics []*models.Metrics) ([]*models.Metrics,
 	}
 
 	stmtc, err := tx.Prepare(
-		"INSERT INTO metrics as m (name, mtype, delta, value) VALUES ($1, $2, $3, $4)" +
-			" ON CONFLICT (name)  DO UPDATE SET delta = (m.delta + EXCLUDED.delta)")
+		`INSERT INTO metrics as m (name, mtype, delta, value) VALUES ($1, $2, $3, $4)
+			ON CONFLICT (name)  DO UPDATE SET delta = (m.delta + EXCLUDED.delta)`)
 
 	if err != nil {
 		return metrics, err
@@ -210,27 +187,4 @@ func (m *DBStorage) UpdateMetrics(metrics []*models.Metrics) ([]*models.Metrics,
 	_ = tx.Commit()
 
 	return metrics, nil
-}
-
-type Retrier struct {
-	retries []time.Duration
-}
-
-func NewRetrier() Retrier {
-	return Retrier{
-		retries: []time.Duration{0, constants.RetryWaitMin, constants.RetryMedium, constants.RetryWaitMax},
-	}
-}
-
-func haveToRetry(err error) bool {
-	var pge *pgconn.PgError
-	var nete *net.OpError
-
-	if errors.As(err, &pge) {
-		return true
-	}
-	if errors.Is(err, nete) {
-		return true
-	}
-	return false
 }

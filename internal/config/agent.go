@@ -13,6 +13,7 @@ type ConfigAgent struct {
 	Port           string `env:"ADDRESS"`
 	ReportInterval int    `env:"REPORT_INTERVAL"`
 	PollInterval   int    `env:"POLL_INTERVAL"`
+	RateLimit      int    `env:"RATE_LIMIT"`
 	HashKey        string `env:"KEY"`
 	Logger         *logger.Config
 }
@@ -21,6 +22,7 @@ func InitAgent() (*ConfigAgent, error) {
 	var flagRunAddr string
 	var pollInterval int
 	var reportInterval int
+	var flagRateLimit int
 	var flaghashkey string
 
 	cfg := &ConfigAgent{}
@@ -28,6 +30,7 @@ func InitAgent() (*ConfigAgent, error) {
 
 	flag.StringVar(&flagRunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.IntVar(&reportInterval, "r", 10, "report interval in seconds")
+	flag.IntVar(&flagRateLimit, "l", 5, "rate limit")
 	flag.IntVar(&pollInterval, "p", 2, "poll interval in seconds")
 	flag.StringVar(&flaghashkey, "k", "secretkey", "key for hash func")
 
@@ -35,6 +38,10 @@ func InitAgent() (*ConfigAgent, error) {
 
 	if cfg.PollInterval == 0 {
 		cfg.PollInterval = pollInterval
+	}
+
+	if cfg.RateLimit == 0 {
+		cfg.RateLimit = flagRateLimit
 	}
 
 	if cfg.ReportInterval == 0 {

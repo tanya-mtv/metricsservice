@@ -15,6 +15,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/tanya-mtv/metricsservice/internal/constants"
 	"github.com/tanya-mtv/metricsservice/internal/hashsha"
 
@@ -75,6 +77,7 @@ func NewServiceMetrics(collector *repository.MetricRepositoryCollector, cfg *con
 	}
 }
 
+// func (sm *ServiceMetrics) MetricsMonitor(inputCh chan models.Metrics) {
 func (sm *ServiceMetrics) MetricsMonitor() {
 
 	var rtm runtime.MemStats
@@ -112,6 +115,28 @@ func (sm *ServiceMetrics) MetricsMonitor() {
 
 	sm.collector.SetValueCounter("PollCount", repository.Counter(sm.counter.value()))
 	sm.collector.SetValueGauge("RandomValue", repository.Gauge(float64(rand.Float64())))
+
+}
+
+func (sm *ServiceMetrics) MetricsMonitorGopsutil(ctx context.Context) {
+
+	memstat, err := mem.VirtualMemoryWithContext(ctx)
+	if err != nil {
+		sm.log.Error("Can't get memstat")
+		return
+	}
+	cpustat, err := cpu.PercentWithContext(ctx, 0, true)
+	if err != nil {
+		sm.log.Error("Can't get cpustat")
+		return
+	}
+
+	sm.collector.SetValueGauge("TotalMemory", repository.Gauge(float64(memstat.Total)))
+	sm.collector.SetValueGauge("FreeMemory", repository.Gauge(float64(memstat.Total)))
+	for i, val := range cpustat {
+		sm.collector.SetValueGauge(fmt.Sprintf("CPUutilization%d", i+1), repository.Gauge(float64(val)))
+	}
+
 }
 
 func newMetric(metricName, metricsType string) *models.Metrics {
@@ -147,6 +172,10 @@ func (sm *ServiceMetrics) PostJSON(ctx context.Context, metrics []models.Metrics
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Content-Encoding", "gzip")
 	req.Header.Set("Accept-Encoding", "identity")
+	if sm.cfg.HashKey != "" {
+		textHeader := hashsha.CreateHash(sm.cfg.HashKey, data)
+		req.Header.Set(constants.HashHeader, textHeader)
+	}
 	resp, err := sm.httpClient.Do(req)
 
 	if err != nil {
@@ -160,6 +189,10 @@ func (sm *ServiceMetrics) PostJSON(ctx context.Context, metrics []models.Metrics
 
 }
 
+func (sm *ServiceMetrics) GetAllMetricList() []models.Metrics {
+	return sm.collector.GetAllMetricsList()
+}
+
 func (sm *ServiceMetrics) PostMessageJSON(ctx context.Context) {
 	addr := fmt.Sprintf("http://%s/updates/", sm.cfg.Port)
 	listMetrics := sm.collector.GetAllMetricsList()
@@ -167,6 +200,7 @@ func (sm *ServiceMetrics) PostMessageJSON(ctx context.Context) {
 		_, err := sm.PostJSON(ctx, listMetrics, addr)
 
 		if err != nil {
+
 			sm.log.Info(err)
 		}
 	}
@@ -215,32 +249,12 @@ func (sm *ServiceMetrics) Post(ctx context.Context, metric *models.Metrics, url 
 	return string(body), err
 }
 
-func (sm *ServiceMetrics) PostMessage(ctx context.Context) {
-	addr := fmt.Sprintf("http://%s/update", sm.cfg.Port)
+func (sm *ServiceMetrics) PostMessage(ctx context.Context, data models.Metrics) {
+	addr := fmt.Sprintf("http://%s/update/", sm.cfg.Port)
 
-	for name, value := range sm.collector.GetAllGauge() {
-		data := newMetric(name, "gauge")
-		tmp := float64(value)
-		data.Value = &tmp
-
-		_, err := sm.Post(ctx, data, addr)
-
-		if err != nil {
-			sm.log.Info(err)
-		}
-	}
-
-	for name, value := range sm.collector.GetAllCounter() {
-
-		data := newMetric(name, "counter")
-		tmp := int64(value)
-		data.Delta = &tmp
-
-		_, err := sm.Post(ctx, data, addr)
-
-		if err != nil {
-			sm.log.Info(err)
-		}
+	_, err := sm.Post(ctx, &data, addr)
+	if err != nil {
+		sm.log.Info(err)
 	}
 	sm.counter.nulValue()
 

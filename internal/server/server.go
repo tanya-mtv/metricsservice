@@ -10,6 +10,7 @@ import (
 
 	"github.com/tanya-mtv/metricsservice/internal/models"
 	"github.com/tanya-mtv/metricsservice/internal/repository"
+	"github.com/tanya-mtv/metricsservice/internal/retrier"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tanya-mtv/metricsservice/internal/config"
@@ -30,12 +31,14 @@ type server struct {
 	router *gin.Engine
 	log    logger.Logger
 	stor   metricStorage
+	ret    *retrier.Retrier
 }
 
 func NewServer(cfg *config.ConfigServer, log logger.Logger) *server {
 	return &server{
 		cfg: cfg,
 		log: log,
+		ret: retrier.NewRetrier(),
 	}
 }
 

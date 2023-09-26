@@ -71,6 +71,16 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 		h.log.Error(err)
 		return
 	}
+	header, hashashheader := c.Get("ReqHashHeader")
+
+	if hashashheader {
+		textHeader := hashsha.CreateHash(h.cfg.HashKey, jsonData)
+		if textHeader != header {
+			h.log.Info("hashes are not equal")
+			newErrorResponse(c, http.StatusBadRequest, "hashes are not equal")
+			return
+		}
+	}
 	defer c.Request.Body.Close()
 
 	var metrics []*models.Metrics
@@ -92,6 +102,16 @@ func (h *Handler) PostMetricsList(c *gin.Context) {
 	h.log.Debug("Response PostMetricsList %+v \n", list)
 	c.Writer.Header().Set("Content-Type", "application/json")
 
+	if h.cfg.HashKey != "" && hashashheader {
+		data, err := json.Marshal(&newList)
+
+		if err != nil {
+			h.log.Debug("Can't marshal counter metric")
+			return
+		}
+		respheader := hashsha.CreateHash(h.cfg.HashKey, data)
+		c.Writer.Header().Set("HashSHA256", respheader)
+	}
 	c.JSON(http.StatusOK, newList)
 
 }

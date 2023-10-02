@@ -30,7 +30,7 @@ func InitAgent() (*ConfigAgent, error) {
 
 	flag.StringVar(&flagRunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.IntVar(&reportInterval, "r", 10, "report interval in seconds")
-	flag.IntVar(&flagRateLimit, "l", 5, "rate limit")
+	flag.IntVar(&flagRateLimit, "l", 3, "rate limit")
 	flag.IntVar(&pollInterval, "p", 2, "poll interval in seconds")
 	flag.StringVar(&flaghashkey, "k", "secretkey", "key for hash func")
 

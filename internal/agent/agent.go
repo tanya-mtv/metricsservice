@@ -65,7 +65,7 @@ func (a *agent) createWorkerPool(ctx context.Context) {
 
 	for w := 1; w <= a.cfg.RateLimit; w++ {
 		go func(w int) {
-			a.worker(ctx, jobs, w)
+			a.recieveChainData(ctx, jobs, w)
 		}(w)
 	}
 
@@ -73,6 +73,7 @@ func (a *agent) createWorkerPool(ctx context.Context) {
 		fmt.Println("get metric  ", metrics[j-1])
 		jobs <- metrics[j-1]
 	}
+
 	close(jobs)
 }
 func (a *agent) recieveChainData(ctx context.Context, jobs <-chan models.Metrics, w int) {
@@ -91,8 +92,4 @@ func (a *agent) recieveChainData(ctx context.Context, jobs <-chan models.Metrics
 		}
 	}
 
-}
-
-func (a *agent) worker(ctx context.Context, jobs <-chan models.Metrics, w int) {
-	a.recieveChainData(ctx, jobs, w)
 }
